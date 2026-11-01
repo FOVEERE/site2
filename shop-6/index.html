@@ -145,6 +145,45 @@
     z-index:20;backdrop-filter:blur(8px);
   }
   #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* 跳转前的三步提示 */
+  .jump-tip{
+    position:fixed;inset:0;z-index:60;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(24,20,16,.55);backdrop-filter:blur(6px);
+    opacity:0;pointer-events:none;transition:opacity .22s ease;
+    padding:24px;
+  }
+  .jump-tip.on{opacity:1;pointer-events:auto}
+  .jump-card{
+    width:100%;max-width:320px;background:#fffdf9;border-radius:26px;
+    padding:26px 22px 18px;text-align:center;
+    box-shadow:0 24px 60px rgba(40,28,12,.28);
+    transform:translateY(10px) scale(.97);
+    transition:transform .26s cubic-bezier(.2,1.3,.4,1);
+  }
+  .jump-tip.on .jump-card{transform:translateY(0) scale(1)}
+  .jump-tick{
+    width:56px;height:56px;margin:0 auto 12px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#8be2a8,#4cc98a);color:#fff;
+  }
+  .jump-t1{font-size:19px;font-weight:800;color:var(--ink);letter-spacing:.02em}
+  .jump-t2{margin-top:14px;font-size:15px;font-weight:700;color:var(--ink)}
+  .jump-t2 b{color:#e8701a}
+  .jump-t3{margin-top:5px;font-size:13.5px;color:var(--muted)}
+  .jump-go{
+    width:100%;height:48px;margin-top:18px;border:0;border-radius:14px;cursor:pointer;
+    font:inherit;font-size:15.5px;font-weight:750;color:#3a2400;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));
+    box-shadow:0 8px 20px rgba(255,150,40,.3);
+  }
+  .jump-go:active{transform:scale(.985)}
+  .jump-t4{margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .jump-cancel{
+    margin-top:12px;background:none;border:0;padding:6px;cursor:pointer;
+    font:inherit;font-size:12.5px;color:#9a9184;text-decoration:underline;
+  }
 </style>
 </head>
 <body>
@@ -222,6 +261,20 @@
 </div>
 
 <div id="toast"></div>
+
+<div class="jump-tip" id="jumpTip" aria-hidden="true">
+  <div class="jump-card">
+    <div class="jump-tick">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 7"/></svg>
+    </div>
+    <p class="jump-t1">草稿已复制</p>
+    <p class="jump-t2">打开后点右下角 <b>评价</b></p>
+    <p class="jump-t3">长按输入框 → 粘贴 → 发布</p>
+    <button class="jump-go" id="jumpGo" type="button">立刻打开</button>
+    <p class="jump-t4" id="jumpCount">3 秒后自动打开…</p>
+    <button class="jump-cancel" id="jumpCancel" type="button">不用了，我自己复制</button>
+  </div>
+</div>
 
 <script>
 window.SHOPS = {
@@ -580,6 +633,42 @@ window.SHOPS = {
   /* ---------------- 跳转（美团 / 大众点评） ---------------- */
   let jumping = false;
 
+  const jumpTip = document.getElementById("jumpTip");
+  const jumpCount = document.getElementById("jumpCount");
+  let jumpUrl = "", jumpTimer = null, jumpTick = null;
+
+  function hideJump() {
+    clearTimeout(jumpTimer);
+    clearInterval(jumpTick);
+    jumpTip.classList.remove("on");
+    jumpTip.setAttribute("aria-hidden", "true");
+  }
+
+  // 跳转前给 3 秒：告诉他打开后点哪里、怎么粘
+  function showJump(url) {
+    jumpUrl = url;
+    let n = 3;
+    jumpCount.textContent = n + " 秒后自动打开…";
+    jumpTip.classList.add("on");
+    jumpTip.setAttribute("aria-hidden", "false");
+    clearInterval(jumpTick);
+    jumpTick = setInterval(() => {
+      n -= 1;
+      jumpCount.textContent = n > 0 ? n + " 秒后自动打开…" : "正在打开…";
+    }, 1000);
+    clearTimeout(jumpTimer);
+    jumpTimer = setTimeout(() => {
+      hideJump();
+      openUrl(jumpUrl, true);
+    }, 2600);
+  }
+
+  document.getElementById("jumpGo").addEventListener("click", () => {
+    hideJump();
+    openUrl(jumpUrl, true);
+  });
+  document.getElementById("jumpCancel").addEventListener("click", hideJump);
+
   function openUrl(url, viaApp) {
     if (jumping || !url) return;
     jumping = true;
@@ -610,6 +699,7 @@ window.SHOPS = {
   [btnGo, btnDianping, btnStore].forEach((b) => btnHTML.set(b, b.innerHTML));
 
   // 复制草稿 → 反馈 → 跳转。dest: "meituan" | "dianping"
+  let copyFallback = false;
   async function goWithDraft(btn, dest) {
     const url = dest === "dianping" ? shop.dianpingUrl : shop.storeUrl;
     if (dest === "meituan" && PLACEHOLDER) return toast("还没填店铺链接，见 README 第五节");
@@ -619,15 +709,20 @@ window.SHOPS = {
     if (ok) {
       btn.classList.add("done");
       btn.textContent = "已复制 ✓";
-      toast("草稿已复制，去粘贴");
       setTimeout(() => {
         btn.classList.remove("done");
         btn.innerHTML = btnHTML.get(btn);
       }, 2400);
+      showJump(url);
     } else {
-      toast("请手动长按上面的文字复制");
+      // 复制被浏览器挡了：别急着跳走，先让他长按复制，再点一次按钮
+      if (!copyFallback) {
+        copyFallback = true;
+        toast("长按草稿复制，好了再点一下这个按钮");
+        return;
+      }
+      showJump(url);
     }
-    setTimeout(() => openUrl(url, true), ok ? 520 : 900);
   }
 
   btnGo.addEventListener("click", () => goWithDraft(btnGo, "meituan"));
