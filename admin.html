@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>门店看板</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --ink:#1d2129; --sub:#6b7280; --line:#e6e8eb;
+    --accent:#ff8a3d; --ok:#2f9e6f; --warn:#c2410c;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:22px;margin:0 0 6px}
+  .lead{color:var(--sub);font-size:13.5px;margin:0 0 20px}
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+  button{
+    font:inherit;cursor:pointer;border:0;border-radius:11px;padding:9px 16px;
+    background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(16,24,40,.08);
+  }
+  button.primary{background:var(--accent);color:#fff;font-weight:650}
+  button:active{transform:translateY(1px)}
+  .stamp{color:var(--sub);font-size:13px}
+  .card{background:var(--card);border-radius:16px;box-shadow:0 1px 3px rgba(16,24,40,.07);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  th{font-size:12.5px;color:var(--sub);font-weight:600;background:#fbfbfc}
+  tr:last-child td{border-bottom:0}
+  td.num{text-align:right}
+  .name{font-weight:640}
+  .slug{display:block;color:var(--sub);font-size:12px;font-weight:400;margin-top:2px}
+  .rate{font-weight:650;color:var(--ok)}
+  .rate.low{color:var(--warn)}
+  .delta{font-size:12px;color:var(--sub);margin-left:6px}
+  .empty{padding:28px 16px;color:var(--sub);text-align:center}
+  .note{margin-top:18px;color:var(--sub);font-size:13px;line-height:1.75}
+  .note b{color:var(--ink)}
+  a{color:#2563eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>门店看板</h1>
+  <p class="lead">每张桌上的码被扫了几次、多少人复制走了草稿。数据来自免费计数器，只存数字，不存任何顾客信息。</p>
+
+  <div class="bar">
+    <button class="primary" id="btnRefresh">刷新</button>
+    <button id="btnCsv">导出 CSV</button>
+    <span class="stamp" id="stamp">正在读取…</span>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>门店</th>
+          <th class="num">扫码</th>
+          <th class="num">复制草稿</th>
+          <th class="num">配图</th>
+          <th class="num">复制率</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="5" class="empty">加载中…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <p><b>怎么读：</b>「复制率」= 复制草稿 ÷ 扫码。低于 30% 一般是两个原因：① 卡摆的位置不对（太靠后、被菜单挡住）；② 客人不清楚扫了要干嘛，可以把卡上的「手机扫一扫 · 写一条真实评价」换成更具体的一句话。</p>
+    <p><b>数字是累计的</b>，从第一次有人扫码开始算。想看「这周新增多少」，点刷新时会自动记下当次数值，下次刷新就能看到增量（同一台电脑上）。</p>
+    <p><b>桌码/员工码：</b>印码时在网址后面加 <code>?t=3</code>（3 可以是桌号或员工编号），看板里会单独多出一行，用来判断哪张桌、谁的引导更有效。</p>
+  </div>
+</div>
+
+<script>
+(async function () {
+  const NS = window.STATS_NS || "dsh-review-v1";
+  const API = "https://abacus.jasoncameron.dev/get/";
+  const LS_SNAP = "dsh-admin-snap-v1";
+  const rowsEl = document.getElementById("rows");
+  const stampEl = document.getElementById("stamp");
+
+  const fmt = (n) => (n == null ? "—" : n.toLocaleString("zh-CN"));
+
+  async function count(key) {
+    try {
+      const r = await fetch(API + encodeURIComponent(NS) + "/" + encodeURIComponent(key), { cache: "no-store" });
+      if (!r.ok) return 0;
+      const j = await r.json();
+      return Number(j.value) || 0;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function loadShops() {
+    try {
+      const r = await fetch("shops.json", { cache: "no-store" });
+      const j = await r.json();
+      return Object.keys(j).map((k) => ({ slug: k, name: j[k].name || k }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  let cache = { rows: [], at: 0 };
+
+  async function refresh() {
+    rowsEl.innerHTML = '<tr><td colspan="5" class="empty">正在读取…</td></tr>';
+    const shops = await loadShops();
+    if (!shops.length) {
+      rowsEl.innerHTML = '<tr><td colspan="5" class="empty">读不到 shops.json，确认它和本页在同一个目录</td></tr>';
+      stampEl.textContent = "读取失败";
+      return;
+    }
+
+    const snap = JSON.parse(localStorage.getItem(LS_SNAP) || "{}");
+    const out = [];
+    for (const s of shops) {
+      const [view, copy, photo] = await Promise.all([
+        count(s.slug + "-view"), count(s.slug + "-copy"), count(s.slug + "-photo"),
+      ]);
+      out.push({ ...s, view, copy, photo });
+    }
+
+    const now = Date.now();
+    rowsEl.innerHTML = "";
+    for (const r of out) {
+      const rate = r.view ? Math.round((r.copy / r.view) * 100) : null;
+      const prev = snap[r.slug];
+      const d = (cur, key) => (prev && Number.isFinite(cur) && Number.isFinite(prev[key]) && cur > prev[key])
+        ? '<span class="delta">+' + (cur - prev[key]) + "</span>" : "";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td><span class="name">' + r.name + '</span><span class="slug">' + r.slug + "</span></td>" +
+        '<td class="num">' + fmt(r.view) + d(r.view, "view") + "</td>" +
+        '<td class="num">' + fmt(r.copy) + d(r.copy, "copy") + "</td>" +
+        '<td class="num">' + fmt(r.photo) + "</td>" +
+        '<td class="num"><span class="rate' + (rate != null && rate < 30 ? " low" : "") + '">' +
+          (rate == null ? "—" : rate + "%") + "</span></td>";
+      rowsEl.appendChild(tr);
+    }
+
+    const o = Math.round((out.reduce((a, b) => a + (b.view || 0), 0)));
+    const c = Math.round((out.reduce((a, b) => a + (b.copy || 0), 0)));
+    stampEl.textContent = "共 " + out.length + " 家 · 扫码 " + o + " · 复制 " + c +
+      " · 更新于 " + new Date(now).toLocaleString("zh-CN", { hour12: false });
+
+    localStorage.setItem(LS_SNAP, JSON.stringify(Object.fromEntries(
+      out.map((r) => [r.slug, { view: r.view, copy: r.copy, photo: r.photo }])
+    )));
+    cache = { rows: out, at: now };
+  }
+
+  document.getElementById("btnRefresh").addEventListener("click", refresh);
+
+  document.getElementById("btnCsv").addEventListener("click", () => {
+    if (!cache.rows.length) return;
+    const head = "门店,标识,扫码,复制草稿,配图,复制率\n";
+    const body = cache.rows.map((r) => {
+      const rate = r.view ? Math.round((r.copy / r.view) * 100) + "%" : "";
+      return [r.name, r.slug, r.view, r.copy, r.photo, rate].join(",");
+    }).join("\n");
+    const blob = new Blob(["\ufeff" + head + body], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "门店看板-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
