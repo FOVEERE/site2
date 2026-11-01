@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>店长单页 · A4</title>
+<style>
+  @page { size: A4; margin: 0; }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#eceff3}
+  body{
+    font-family:"Noto Sans SC","Source Han Sans SC","PingFang SC",sans-serif;
+    color:#16181d;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .sheet{
+    width:210mm;height:297mm;margin:12mm auto;background:#fff;position:relative;
+    padding:13mm 14mm 11mm;display:flex;flex-direction:column;
+    box-shadow:0 4px 24px rgba(0,0,0,.12);
+  }
+  @media print{
+    body{background:#fff}
+    .sheet{margin:0;box-shadow:none}
+  }
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10mm;border-bottom:1.6px solid #16181d;padding-bottom:5mm}
+  .kicker{font-size:3.2mm;letter-spacing:.22em;color:#8a8f99;margin:0 0 2mm}
+  h1{font-size:8.2mm;line-height:1.26;margin:0;letter-spacing:-.01em}
+  h1 em{font-style:normal;background:linear-gradient(transparent 62%, #ffd9a8 62%)}
+  .brand{text-align:right;font-size:3.4mm;color:#6b7280;line-height:1.7;white-space:nowrap}
+  .brand b{display:block;font-size:4.2mm;color:#16181d;letter-spacing:.02em}
+
+  .lead{font-size:3.8mm;line-height:1.8;color:#3a3f47;margin:5.5mm 0 0}
+  .lead b{color:#16181d}
+
+  .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:3.5mm;margin:6mm 0 0}
+  .num{border:1px solid #e3e6ea;border-radius:3.5mm;padding:4mm 4mm 3.5mm}
+  .num .n{font-size:9.4mm;line-height:1;font-weight:750;letter-spacing:-.02em}
+  .num .n small{font-size:5mm;font-weight:650;margin-left:.6mm}
+  .num .t{font-size:3mm;color:#6b7280;margin-top:2mm;line-height:1.45}
+  .num.hi .n{color:#e86f2a}
+
+  h2{font-size:4.1mm;margin:6mm 0 2.6mm;letter-spacing:.02em}
+  h2 span{color:#9aa0a8;font-weight:400;font-size:3.4mm;margin-left:2mm}
+
+  .rows{display:flex;flex-direction:column;gap:2.4mm}
+  .row{display:grid;grid-template-columns:6mm 1fr;gap:0;font-size:3.5mm;line-height:1.65}
+  .row i{font-style:normal;font-weight:750;color:#e86f2a;padding-top:.2mm}
+  .row b{font-weight:650}
+  .row p{margin:0;color:#3a3f47}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-top:1mm}
+  .box{border-radius:3.5mm;padding:4mm;font-size:3.3mm;line-height:1.7}
+  .box h3{font-size:3.8mm;margin:0 0 2mm}
+  .no{background:#fdf2f2;border:1px solid #f4d4d4}
+  .no h3{color:#b42318}
+  .yes{background:#f1f8f3;border:1px solid #d3e9da}
+  .yes h3{color:#1f7a4d}
+
+  .price{margin-top:5.5mm;border:1.5px solid #16181d;border-radius:3.5mm;padding:4.5mm;display:flex;align-items:center;justify-content:space-between;gap:6mm}
+  .price .left{font-size:3.6mm;color:#6b7280;line-height:1.7}
+  .price .left b{display:block;font-size:4.4mm;color:#16181d;margin-bottom:1.6mm}
+  .price .right{text-align:right;white-space:nowrap}
+  .price .right .big{font-size:8.2mm;font-weight:750;letter-spacing:-.02em}
+  .price .right .big small{font-size:4mm;font-weight:600;color:#6b7280;margin-left:1mm}
+  .price .right .sub{font-size:3.3mm;color:#6b7280;margin-top:1mm}
+
+  .step{margin-top:4.5mm;font-size:3.4mm;line-height:1.7;color:#3a3f47}
+  .step b{color:#16181d}
+  .step .k{display:inline-block;background:#16181d;color:#fff;border-radius:2mm;padding:.4mm 2mm;font-size:3.2mm;margin-right:1.6mm}
+
+  .foot{margin-top:auto;padding-top:4mm;border-top:1px solid #e3e6ea;display:flex;justify-content:space-between;align-items:flex-end;gap:6mm;font-size:3.3mm;color:#6b7280;line-height:1.7}
+  .foot b{color:#16181d}
+  .qrmini{width:26mm;text-align:center}
+  .qrmini div{width:26mm;height:26mm;border:1px dashed #c9ced6;border-radius:3mm;display:flex;align-items:center;justify-content:center;font-size:2.8mm;color:#9aa0a8;margin-bottom:1.6mm}
+</style>
+</head>
+<body>
+<section class="sheet">
+  <div class="top">
+    <div>
+      <p class="kicker">门店评价工具 · 一页说明</p>
+      <h1>把「想给个好评」<br>变成<em>30 秒就能发出去的一小段话</em></h1>
+    </div>
+    <div class="brand">
+      <b>评价小卡</b>
+      桌卡 + 一页生成<br>不用装 App，不用注册
+    </div>
+  </div>
+
+  <p class="lead">
+    <b>一个实际问题：</b>客人吃完觉得不错，但打开 App 写评价要打字、要组织语言，多数人写到一半就退出去了。
+    我们的做法是在桌上放一张卡——客人扫码，点两三个真实感受，<b>页面自动写成一整段顺口的话</b>，复制、粘贴、发布。
+    整个过程 30 秒，客人说的还是他自己的真实感受。
+  </p>
+
+  <div class="nums">
+    <div class="num hi">
+      <div class="n">30<small>秒</small></div>
+      <div class="t">从扫码到复制完草稿的平均用时</div>
+    </div>
+    <div class="num">
+      <div class="n">62<small>%</small></div>
+      <div class="t">扫码后愿意生成并复制草稿的比例（试投放数据）</div>
+    </div>
+    <div class="num">
+      <div class="n">2<small>周</small></div>
+      <div class="t">文案库轮换周期，重复来吃的人看到的说法不一样</div>
+    </div>
+  </div>
+
+  <h2>我们做什么 <span>三件事，不多做</span></h2>
+  <div class="rows">
+    <div class="row"><i>01</i><p><b>桌卡</b>——A6 立牌，正面一个码，一句话说明扫码干什么。摆在桌上、收银台、打包袋上都行。</p></div>
+    <div class="row"><i>02</i><p><b>一页页面</b>——客人点的是「分量足 / 上菜快 / 不推销」这类标签，页面据此拼成一段 30~45 字的话，句子每次都不一样。</p></div>
+    <div class="row"><i>03</i><p><b>一个看板</b>——本周扫了多少次、多少人复制走了、哪张桌的卡更有效。用数字判断值不值得续。</p></div>
+  </div>
+
+  <h2>跟「刷好评」不是一回事 <span>这条必须说清楚</span></h2>
+  <div class="split">
+    <div class="box no">
+      <h3>✕ 我们不做的</h3>
+      不代写好评、不批量生成、不买号、不返现换好评。<br>
+      这些会被平台判违规：删评、降权、严重时封店。
+    </div>
+    <div class="box yes">
+      <h3>✓ 我们做的</h3>
+      客人自己点、自己改、自己发。<br>
+      页面只做一件事：<b>把他想说的话说顺</b>。他不认可的词，删掉就是了。
+    </div>
+  </div>
+
+  <div class="price">
+    <div class="left">
+      <b>试投放（14 天）</b>
+      含 10 张桌卡、看板、文案库每两周更新。<br>
+      不满意随时停，不用解释。
+    </div>
+    <div class="right">
+      <div class="big">199<small>元 / 月</small></div>
+      <div class="sub">年付 1,999 元 · 多店按店数计</div>
+    </div>
+  </div>
+
+  <p class="step">
+    <span class="k">怎么开始</span>
+    先放 <b>3 张卡</b>在 3 张桌上，7 天后打开看板：<b>扫码数、复制率</b>两个数一看就知道有没有用。
+    有用再加桌，没用就撤——<b>你不需要先说服自己</b>。
+  </p>
+
+  <div class="foot">
+    <div>
+      <b>看一个真实页面：</b>用手机扫右边的码<br>
+      或搜索：<b>foveere.github.io/site2</b><br>
+      联系：<b>（填你的微信 / 电话）</b>
+    </div>
+    <div class="qrmini">
+      <div>贴二维码</div>
+      先摆 3 张试试
+    </div>
+  </div>
+</section>
+</body>
+</html>
+
