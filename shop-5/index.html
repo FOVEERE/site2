@@ -208,7 +208,7 @@
       <h2>哪些是真的？点一下</h2>
       <span id="picked">已选 0</span>
     </div>
-    <p class="group">吃得怎么样</p>
+    <p class="group" id="labelFood">吃得怎么样</p>
     <div class="chips" id="groupFood"></div>
     <p class="group" id="labelShop">店里怎么样</p>
     <div class="chips" id="groupShop"></div>
@@ -234,14 +234,7 @@
       <i class="num">3</i>
       <h2 id="step3Title">去美团粘贴发布</h2>
     </div>
-    <button class="btn btn-primary" id="btnGo">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M12 11v7M9 15l3 3 3-3"/></svg>
-      复制草稿，打开美团
-    </button>
-    <button class="btn btn-dianping" id="btnDianping" hidden>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8.5 10.5l1.6 1.6 3.4-3.4"/></svg>
-      复制草稿，打开大众点评
-    </button>
+    <div id="goBtns"></div>
     <button class="btn btn-second" id="btnStore">只看店铺页</button>
     <p class="hint" id="step3Hint">打开后进「评价」，长按输入框粘贴即可</p>
   </section>
@@ -281,15 +274,7 @@
 </div>
 
 <script>
-window.SHOPS = {
-  demo: {
-    name: "舌尖大师 · 文理后街店",
-    subtitle: "武陵区 · 长源路 110 号",
-    channel: "dinein",
-    storeUrl: "http://dpurl.cn/eF9bftXz",
-    dianpingUrl: "",
-  },
-};
+window.SHOPS = { demo: {"name":"舌尖大师 · 文理后街店","subtitle":"武陵区 · 长源路 110 号","channel":"dinein","storeUrl":"http://dpurl.cn/eF9bftXz","dianpingUrl":""} };
 </script>
 <script>
 (() => {
@@ -303,13 +288,31 @@ window.SHOPS = {
   const shop = SHOPS[shopKey] || { name: "这家店", subtitle: "", storeUrl: "", deeplink: "" };
 
   // 还是首页占位链接时不跳转：否则客人一碰就落到美团首页，看起来像坏了
-  const PLACEHOLDER = !shop.storeUrl ||
-    /^https?:\/\/(www\.|i\.)?meituan\.com\/?$/i.test(String(shop.storeUrl).trim());
+  const HAS_URL = !!shop.storeUrl || (Array.isArray(shop.platforms) && shop.platforms.length > 0);
+  const PLACEHOLDER = !HAS_URL ||
+    /^https?:\/\/(www\.|i\.)?meituan\.com\/?$/i.test(String(shop.storeUrl || "").trim());
+
+  /* ---------------- 打点：失败完全不影响使用 ---------------- */
+  const STATS_NS = window.STATS_NS || "dsh-review-v1";
+  const STATS_ON = shop.stats !== false && location.protocol !== "file:";
+  const tbl = (new URLSearchParams(location.search).get("t") || "").replace(/[^\w-]/g, "").slice(0, 8);
+
+  function ping(ev) {
+    if (!STATS_ON) return;
+    try {
+      const key = shopKey + "-" + ev + (tbl ? "-t" + tbl : "");
+      const u = "https://abacus.jasoncameron.dev/hit/" +
+        encodeURIComponent(STATS_NS) + "/" + encodeURIComponent(key);
+      fetch(u, { mode: "cors", keepalive: true, cache: "no-store" }).catch(() => {});
+    } catch (e) { /* 统计而已，坏了不吭声 */ }
+  }
 
   document.title = "给「" + (shop.name || "这家店") + "」写条评价";
   document.getElementById("shopName").textContent = shop.name || "这家店";
   document.getElementById("shopSub").textContent = shop.subtitle || "选几个真实感受，帮你把话写顺";
   if (shop.footer) document.getElementById("footText").textContent = shop.footer;
+
+  ping("view");
 
   /* ---------------- 标签库 ---------------- */
   // 到店：说环境、座位、上菜
@@ -374,6 +377,37 @@ window.SHOPS = {
     ],
   };
 
+  // 到店服务业（美容/美发/口腔/汽修/宠物…）：说手艺、效果、有没有推销
+  const SHOP_SERVICE = {
+    label: "服务怎么样",
+    items: [
+      { id: "nosell", text: "不推销", phrases: [
+        "全程不推销", "没有硬推办卡", "不会一直劝你加项目", "耳根子清静",
+        "推得很有分寸", "不会跟你绕话", "该说的说完就干活", "不催着充卡",
+      ] },
+      { id: "sclean", text: "干净卫生", phrases: [
+        "店里很干净", "器具都消过毒", "一次性的当面拆", "毛巾是新的",
+        "操作台收拾得利索", "卫生这块放心", "没什么异味",
+      ] },
+      { id: "explain", text: "讲得清楚", phrases: [
+        "会先问清我的需求", "过程都讲明白了", "注意事项交代得细", "有问都耐心答",
+        "不会糊里糊涂就动手", "价格和项目先说清楚", "该注意的都提醒了",
+      ] },
+      { id: "wait", text: "等候不久", phrases: [
+        "等候时间不长", "到店就安排上了", "没排太久", "约的时间基本不拖",
+        "不用干等着", "去了就能做", "节奏安排得挺好",
+      ] },
+      { id: "sservice", text: "态度好", phrases: [
+        "招呼得客气", "服务态度很好", "说话让人舒服", "细节上很照顾",
+        "全程没什么不耐烦", "有问题马上处理", "人挺实在的",
+      ] },
+      { id: "rec", text: "值得推荐", phrases: [
+        "朋友问我会推荐", "会带家里人再来", "值得专门跑一趟", "会介绍给同事",
+        "身边人问起来会说好", "这家可以放心推给朋友",
+      ] },
+    ],
+  };
+
   const GROUPS = {
     food: {
       label: "吃得怎么样",
@@ -404,8 +438,39 @@ window.SHOPS = {
         ] },
       ],
     },
-    shop: shop.channel === "waimai" ? SHOP_WAIMAI : SHOP_DINEIN,
+    shop: shop.channel === "waimai" ? SHOP_WAIMAI
+        : shop.channel === "service" ? SHOP_SERVICE
+        : SHOP_DINEIN,
   };
+
+  // 服务业的第一组不是「吃」，换成手艺和效果
+  if (shop.channel === "service") {
+    GROUPS.food = {
+      label: "做得怎么样",
+      items: [
+        { id: "sskill", text: "手艺专业", phrases: [
+          "手法很专业", "下手有分寸", "能按到点子上", "师傅一看就是老手",
+          "做得挺细致", "力道刚好", "全程不糊弄", "手上功夫看得出来",
+        ] },
+        { id: "seffect", text: "效果明显", phrases: [
+          "做完效果挺明显", "比预期好", "当场就看得出变化", "肉眼可见的改善",
+          "效果撑得住", "不是做完就散的那种", "确实有用",
+        ] },
+        { id: "smaterial", text: "用料放心", phrases: [
+          "用的材料放心", "东西是正品", "耗材不省着用", "该用的一点不含糊",
+          "产品愿意给你看", "用料上没打折",
+        ] },
+        { id: "sprice", text: "价格透明", phrases: [
+          "价格说得清清楚楚", "没有隐形消费", "报多少收多少", "不临时加钱",
+          "比别家实在", "花的钱对得起效果",
+        ] },
+        { id: "stime", text: "时间准", phrases: [
+          "说多久就多久", "没拖时间", "不催不赶", "时间安排得刚好",
+          "做完不慌不忙", "节奏挺舒服",
+        ] },
+      ],
+    };
+  }
 
   const DINEIN_OPENERS = [
     "今天过来吃的", "下班顺便来吃的", "周末和朋友来吃的", "第一次来这家",
@@ -424,7 +489,17 @@ window.SHOPS = {
     "天冷在家点的", "常点的一家", "换了家试试", "赶时间随便点的",
   ];
 
-  const OPENERS = shop.channel === "waimai" ? WAIMAI_OPENERS : DINEIN_OPENERS;
+  const SERVICE_OPENERS = [
+    "第一次来做", "朋友推荐来的", "路过进来问的", "预约过来的",
+    "老客了又来的", "陪家里人来的", "同事介绍来的", "看了评分来的",
+    "第二次过来了", "想试试就约的", "刚好路过进来", "网上找的一家",
+    "有人推荐这家", "上班路过看到的", "临时约上的", "冲着口碑来的",
+    "本来只打算问问", "犹豫了挺久才来", "朋友说这家行", "顺手约的一回",
+  ];
+
+  const OPENERS = shop.channel === "waimai" ? WAIMAI_OPENERS
+    : shop.channel === "service" ? SERVICE_OPENERS
+    : DINEIN_OPENERS;
 
   // 正文以「吃」开头时换一套开头，免得「…来吃的，吃着是真香」
   const DINEIN_PLAIN = [
@@ -434,7 +509,11 @@ window.SHOPS = {
   ];
   const WAIMAI_PLAIN = ["这一单", "这次", "今天这顿", "今晚这顿", "中午这顿", "这一份"];
 
-  const OPENERS_PLAIN = shop.channel === "waimai" ? WAIMAI_PLAIN : DINEIN_PLAIN;
+  const SERVICE_PLAIN = ["这次过来", "今天过来", "这一趟", "这次做下来", "头一回过来", "整体下来"];
+
+  const OPENERS_PLAIN = shop.channel === "waimai" ? WAIMAI_PLAIN
+    : shop.channel === "service" ? SERVICE_PLAIN
+    : DINEIN_PLAIN;
 
   const CONNECT = ["，", "，", "，", "，而且", "，另外", "，加上", "，还有",
                    "，关键是", "，最难得的是", "，更难得的是"];
@@ -442,6 +521,9 @@ window.SHOPS = {
   const BRIDGES = shop.channel === "waimai"
     ? ["吃下来挺舒服", "跟店里一个味儿", "整体没什么可挑的", "比预期好",
        "送来的样子挺整", "这份没让人失望", "各方面都挺稳"]
+    : shop.channel === "service"
+    ? ["整体体验不错", "没什么可挑的", "比预想的省心", "过程挺舒服",
+       "该做的都做到位了", "细节上没糊弄", "全程挺自在"]
     : ["吃下来挺舒服", "整体感觉不错", "没什么可挑的", "分量和味道都对得上",
        "这顿吃得挺踏实", "比预期好", "各方面都挺稳", "该有的都有",
        "挑不出什么毛病", "吃完心情挺好"];
@@ -451,6 +533,11 @@ window.SHOPS = {
        "推荐试试。", "已经加收藏了。", "下次再点一份。", "值这个价，推荐点。",
        "会推荐给同事。", "这单点得不亏。", "以后常点。", "还想再点。",
        "没让人失望。", "认这家了。", "会存进收藏。"]
+    : shop.channel === "service"
+    ? ["下次还来。", "会推荐给朋友。", "办了卡，长期做。", "这个价，值。", "会再来做一次。",
+       "放心推荐。", "认这家了。", "服务到位，值这个价。", "下个月再来。",
+       "会带朋友一起。", "没挑出毛病。", "以后就定这家了。", "比之前去的那家强。",
+       "值得专门跑一趟。", "还会再来。"]
     : ["整体挺满意，会再来。", "下次还想来。", "值这个价，推荐试试。",
        "没踩雷，可以放心来。", "吃得挺舒服，会回购。", "总的来说不亏。",
        "会带朋友再来。", "值得专门跑一趟。", "这个价，挺值。", "还想再来吃一次。",
@@ -463,6 +550,7 @@ window.SHOPS = {
   const MAX_PICK = 3;
 
   /* ---------------- 渲染 chips ---------------- */
+  document.getElementById("labelFood").textContent = GROUPS.food.label;
   document.getElementById("labelShop").textContent = GROUPS.shop.label;
 
   function buildChips(groupKey) {
@@ -696,21 +784,56 @@ window.SHOPS = {
     }, 1200);
   }
 
-  const btnGo = document.getElementById("btnGo");
-  const btnDianping = document.getElementById("btnDianping");
+  /* ---------------- 平台按钮（美团 / 大众点评 / 抖音团购） ---------------- */
+  const PLATFORMS = (() => {
+    if (Array.isArray(shop.platforms) && shop.platforms.length) return shop.platforms;
+    const list = [];
+    if (shop.storeUrl) list.push({ id: "meituan", name: "美团", url: shop.storeUrl });
+    if (shop.dianpingUrl) list.push({ id: "dianping", name: "大众点评", url: shop.dianpingUrl });
+    return list;
+  })();
+
+  const ICON = {
+    meituan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M12 11v7M9 15l3 3 3-3"/></svg>',
+    dianping: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8.5 10.5l1.6 1.6 3.4-3.4"/></svg>',
+    douyin: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9.2v5.6l4.6-2.8z"/></svg>',
+  };
+
+  const goBtns = document.getElementById("goBtns");
   const btnStore = document.getElementById("btnStore");
   const btnHTML = new Map();
-  [btnGo, btnDianping, btnStore].forEach((b) => btnHTML.set(b, b.innerHTML));
 
-  // 复制草稿 → 反馈 → 跳转。dest: "meituan" | "dianping"
+  PLATFORMS.forEach((p, idx) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn " + (idx === 0 ? "btn-primary" : "btn-dianping");
+    b.dataset.platform = p.id;
+    b.innerHTML = (ICON[p.id] || ICON.meituan) + "复制草稿，打开" + (p.name || "App");
+    b.addEventListener("click", () => goWithDraft(b, p));
+    btnHTML.set(b, b.innerHTML);
+    goBtns.appendChild(b);
+  });
+  btnHTML.set(btnStore, btnStore.innerHTML);
+
+  const step3Title = document.getElementById("step3Title");
+  const step3Hint = document.getElementById("step3Hint");
+  if (PLATFORMS.length > 1) {
+    step3Title.textContent = "去发布（" + PLATFORMS.map((p) => p.name).join(" / ") + "）";
+    btnStore.hidden = true;
+  } else if (PLATFORMS.length === 1) {
+    step3Title.textContent = "去" + PLATFORMS[0].name + "粘贴发布";
+  }
+
+  // 复制草稿 → 反馈 → 跳转
   let copyFallback = false;
-  async function goWithDraft(btn, dest) {
-    const url = dest === "dianping" ? shop.dianpingUrl : shop.storeUrl;
-    if (dest === "meituan" && PLACEHOLDER) return toast("还没填店铺链接，见 README 第五节");
-    if (!url) return toast(dest === "dianping" ? "还没填大众点评链接" : "还没配置店铺链接");
+  async function goWithDraft(btn, platform) {
+    const url = platform.url;
+    if (PLACEHOLDER && platform.id === "meituan") return toast("还没填店铺链接，见 README 第五节");
+    if (!url) return toast("还没配置" + (platform.name || "") + "链接");
 
     const ok = await copyText(draftEl.value);
     if (ok) {
+      ping("copy");
       btn.classList.add("done");
       btn.textContent = "已复制 ✓";
       setTimeout(() => {
@@ -729,8 +852,6 @@ window.SHOPS = {
     }
   }
 
-  btnGo.addEventListener("click", () => goWithDraft(btnGo, "meituan"));
-  btnDianping.addEventListener("click", () => goWithDraft(btnDianping, "dianping"));
   btnStore.addEventListener("click", () => {
     if (PLACEHOLDER) return toast("还没填店铺链接，见 README 第五节");
     openUrl(shop.storeUrl, true);
@@ -757,6 +878,7 @@ window.SHOPS = {
           cardWrap.hidden = false;
           cardHint.hidden = false;
           cardWrap.scrollIntoView({ behavior: "smooth", block: "center" });
+          ping("photo");
         } catch (e) {
           toast("这张图处理不了，换一张试试");
         }
@@ -860,6 +982,8 @@ window.SHOPS = {
 </script>
 </body>
 </html>
+
+
 
 
 
