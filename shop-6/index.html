@@ -276,6 +276,7 @@
     <div class="card-wrap" id="cardWrap" hidden>
       <div id="cardList"></div>
     </div>
+    <button class="btn btn-second" id="btnSaveAll" hidden>保存到相册</button>
     <p class="hint" id="cardHint" hidden>长按每张图 → 存到相册 → 发评价时一起选上</p>
   </section>
 
@@ -1125,17 +1126,20 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
   document.getElementById("btnPickPhoto").addEventListener("click", () => photoFile.click());
 
   // 最多 3 张：抖音那边要「3 张图才像真到店」
+  let cardBlobs = [];
   photoFile.addEventListener("change", async () => {
     const files = [...(photoFile.files || [])].slice(0, 3);
     if (!files.length) return;
     const list = document.getElementById("cardList");
     list.innerHTML = "";
+    cardBlobs = [];
     let n = 0;
     for (const f of files) {
       try {
         const img = await loadImage(f);
         const url = drawReviewCard(img, files.length > 1 ? n : -1);
         n++;
+        cardBlobs.push(dataURLtoBlob(url, "review-" + n + ".jpg"));
         const el = document.createElement("img");
         el.src = url;
         el.alt = "生成的评价配图 " + n;
@@ -1149,9 +1153,43 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
     if (!n) { toast("这些图处理不了，换几张试试"); return; }
     cardWrap.hidden = false;
     cardHint.hidden = false;
+    if (btnSaveAll) btnSaveAll.hidden = false;
+    syncSaveAll();
     cardWrap.scrollIntoView({ behavior: "smooth", block: "center" });
     ping("photo");
   });
+
+  // 一键存相册：能批量就批量，不行再退回逐张长按
+  const btnSaveAll = document.getElementById("btnSaveAll");
+  function dataURLtoBlob(url, name) {
+    const [head, b64] = url.split(",");
+    const mime = (head.match(/:(.*?);/) || [])[1] || "image/jpeg";
+    const bin = atob(b64);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return new File([arr], name, { type: mime });
+  }
+  function syncSaveAll() {
+    if (!btnSaveAll) return;
+    const n = cardBlobs.length;
+    const can = n > 1 && navigator.canShare && navigator.canShare({ files: cardBlobs });
+    btnSaveAll.textContent = can ? "一键保存 " + n + " 张图" : "保存 " + n + " 张图（长按）";
+    btnSaveAll.dataset.can = can ? "1" : "0";
+  }
+  if (btnSaveAll) {
+    btnSaveAll.addEventListener("click", async () => {
+      if (!cardBlobs.length) return;
+      if (btnSaveAll.dataset.can === "1") {
+        try {
+          await navigator.share({ files: cardBlobs, title: shop.name });
+          toast("选「存储图像」就会存进相册");
+          return;
+        } catch (e) { /* 用户取消或不支持，走下面的提示 */ }
+      }
+      toast("长按上面每张图，存到相册");
+      cardHint.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
 
   function loadImage(file) {
     return new Promise((resolve, reject) => {
@@ -1276,6 +1314,7 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
 </script>
 </body>
 </html>
+
 
 
 
