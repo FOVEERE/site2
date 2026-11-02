@@ -806,15 +806,21 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
 
     if (text.length > L.hard) text = r.op + "，" + r.body + "。" + closing;
     if (text.length > L.hard) text = r.body + "。" + closing;
-    // 抖音版要把话写满：不够 90 字就补一两句真实的尾巴
+    // 抖音版要把话写满：先补具体细节，再补一句尾巴，别堆套话
     if (longMode) {
-      const tails = shuffle(LONG_TAILS).filter((s) => !recentTail.includes(s));
-      let added = 0;
-      for (const s of tails) {
-        if (text.length >= 100 || added >= 4) break;
-        text += s;
-        recentTail.push(s);
-        added++;
+      let detail = 0;
+      for (const it of shuffle(chosen3)) {
+        if (text.length >= 86 || detail >= 1) break;
+        const alt = pick(it.phrases);
+        if (alt && !text.includes(alt)) {
+          text += alt + "。";
+          detail++;
+        }
+      }
+      const tails = shuffle(LONG_TAILS).filter((s) => !recentTail.includes(s) && !text.includes(s));
+      if (text.length < 86 && tails.length) {
+        text += tails[0];
+        recentTail.push(tails[0]);
       }
       if (recentTail.length > 10) recentTail = recentTail.slice(-10);
     }
@@ -1262,6 +1268,8 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
 </script>
 </body>
 </html>
+
+
 
 
 
