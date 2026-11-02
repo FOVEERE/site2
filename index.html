@@ -878,7 +878,7 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
     jumpT1.textContent = fail ? "没自动跳过去" : (manual ? "复制没成功" : "草稿已复制");
     jumpT2.innerHTML = fail ? "长按上面链接 → 复制 → 粘到浏览器"
       : (manual ? "长按上面那段字 → 复制" : HINT_WHERE);
-    jumpT3.textContent = fail ? "或者点下面再试一次"
+    jumpT3.textContent = fail ? "或者在 App 里搜店名，一样能评"
       : (manual ? "复制好再点下面「立刻打开」" : "长按输入框 → 粘贴 → 发布");
     jumpGo.textContent = fail ? "再试一次" : "立刻打开";
 
@@ -975,6 +975,11 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
     btnStore.hidden = true;
   } else if (PLATFORMS.length === 1) {
     step3Title.textContent = "去" + PLATFORMS[0].name + "粘贴发布";
+  }
+  // 点评 / 抖音 必须先装 App，不装点了没反应 —— 提前说清楚，别让人以为坏了
+  const NEEDAPP = PLATFORMS.some((p) => p.id === "dianping" || p.id === "douyin");
+  if (NEEDAPP && step3Hint) {
+    step3Hint.textContent = "打开后进「评价」，长按输入框粘贴即可 · 点评/抖音需先装 App";
   }
 
   // 复制草稿 → 反馈 → 跳转
@@ -1136,6 +1141,7 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
 </script>
 </body>
 </html>
+
 
 
 
