@@ -828,13 +828,24 @@ window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店
     return ok;
   }
 
+  // 有些手机浏览器（vivo/小米自带浏览器）clipboard 的 Promise 会一直挂起，
+  // 导致点了按钮什么都没发生 —— 这里加超时，超过 800ms 直接走老办法。
+  function withTimeout(promise, ms) {
+    return new Promise((resolve) => {
+      let done = false;
+      const t = setTimeout(() => { if (!done) { done = true; resolve("timeout"); } }, ms);
+      promise.then(
+        (v) => { if (!done) { done = true; clearTimeout(t); resolve(v); } },
+        (e) => { if (!done) { done = true; clearTimeout(t); resolve("error"); } }
+      );
+    });
+  }
+
   async function copyText(text) {
     if (!text.trim()) return false;
     if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(text);
-        return true;
-      } catch (e) { /* 落到兜底 */ }
+      const r = await withTimeout(navigator.clipboard.writeText(text), 800);
+      if (r === undefined) return true;          // 正常完成
     }
     return legacyCopy(text);
   }
@@ -989,7 +1000,14 @@ window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店
     if (PLACEHOLDER && platform.id === "meituan") return toast("还没填店铺链接，见 README 第五节");
     if (!url) return toast("还没配置" + (platform.name || "") + "链接");
 
+    // 先给个即时反馈，别让人以为点了没反应
+    const old = btn.innerHTML;
+    btn.innerHTML = "复制中…";
+    btn.disabled = true;
+    setTimeout(() => { if (btn.disabled) { btn.disabled = false; btn.innerHTML = old; } }, 2500);
+
     const ok = await copyText(draftEl.value);
+    btn.disabled = false;
     if (ok) {
       ping("copy");
       btn.classList.add("done");
@@ -1141,6 +1159,8 @@ window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店
 </script>
 </body>
 </html>
+
+
 
 
 
