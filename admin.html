@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -111,6 +111,7 @@
           const j = await r.json();
           return Number(j.value) || 0;
         }
+        if (r.status === 404) return 0;   // 从没被统计过的 key，就是 0
         if (r.status === 429 || r.status >= 500) { await sleep(500 * (attempt + 1)); continue; }
         return null;
       } catch (e) {
@@ -236,4 +237,5 @@
 </script>
 </body>
 </html>
+
 
