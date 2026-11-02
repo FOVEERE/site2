@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -125,7 +125,9 @@
     try {
       const r = await fetch("shops.json", { cache: "no-store" });
       const j = await r.json();
-      return Object.keys(j).map((k) => ({ slug: k, name: j[k].name || k }));
+      return Object.keys(j)
+        .filter((k) => !j[k].hidden)          // 已停推的店（比如外卖店）不进看板
+        .map((k) => ({ slug: k, name: j[k].name || k }));
     } catch (e) {
       return [];
     }
