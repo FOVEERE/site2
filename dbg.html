@@ -1,0 +1,1218 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#fff6ea" />
+<title>写条评价 · 30 秒</title>
+<style>
+  :root{
+    --ink:#1c1f23;
+    --muted:#8a8177;
+    --line:#efe6da;
+    --paper:#fffdf9;
+    --brand:#ffc933;
+    --brand2:#ff9a3c;
+    --bg:#fff6ea;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100svh;
+    background:
+      radial-gradient(120% 60% at 50% 0%, #fff9ef 0%, rgba(255,249,239,0) 60%),
+      linear-gradient(180deg,#fff6ea 0%,#fff3e4 45%,#fff7ef 100%);
+    color:var(--ink);
+    font-family:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",ui-rounded,system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 calc(28px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:26px 20px 0}
+
+  /* ---------- header ---------- */
+  .top{display:flex;align-items:flex-start;gap:12px;margin-bottom:22px}
+  .logo{
+    width:46px;height:46px;flex:none;border-radius:14px;
+    background:linear-gradient(140deg,var(--brand),var(--brand2));
+    display:grid;place-items:center;
+    box-shadow:0 8px 18px -8px rgba(255,154,60,.85);
+  }
+  .logo svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .who{flex:1;min-width:0}
+  .who h1{font-size:19px;line-height:1.3;margin:0 0 3px;font-weight:800;letter-spacing:-.01em}
+  .who p{margin:0;font-size:12.5px;color:var(--muted);letter-spacing:.02em}
+  .pill{
+    flex:none;font-size:11px;font-weight:700;color:#7a4b00;
+    background:#ffe9b8;border-radius:999px;padding:5px 10px;margin-top:2px;
+  }
+
+  /* ---------- steps ---------- */
+  .step{margin-bottom:20px}
+  .step-head{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .num{
+    width:21px;height:21px;flex:none;border-radius:50%;
+    background:var(--ink);color:#fff;font-size:11.5px;font-weight:700;
+    display:grid;place-items:center;
+  }
+  .step-head h2{margin:0;font-size:13.5px;font-weight:700;letter-spacing:.01em}
+  .step-head span{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:600}
+
+  .group{font-size:11.5px;color:var(--muted);font-weight:600;margin:0 0 8px 2px;letter-spacing:.04em}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .chip{
+    font:inherit;font-size:13.5px;font-weight:600;color:#4a4137;
+    background:#fff;border:1px solid var(--line);border-radius:999px;
+    padding:9px 14px;cursor:pointer;
+    transition:transform .1s ease,background .18s,border-color .18s,color .18s,box-shadow .18s;
+    box-shadow:0 1px 2px rgba(120,90,50,.05);
+  }
+  .chip:active{transform:scale(.94)}
+  .chip[aria-pressed="true"]{
+    background:var(--ink);border-color:var(--ink);color:#fff;
+    box-shadow:0 6px 14px -8px rgba(28,31,35,.9);
+  }
+
+  /* ---------- draft ---------- */
+  .draft-wrap{position:relative}
+  textarea#draft{
+    width:100%;min-height:104px;resize:none;
+    font:inherit;font-size:14.5px;line-height:1.8;color:var(--ink);
+    background:var(--paper);border:1px solid var(--line);border-radius:18px;
+    padding:15px 16px;
+    box-shadow:0 8px 22px -18px rgba(120,90,50,.7), inset 0 1px 0 #fff;
+  }
+  textarea#draft:focus{outline:none;border-color:#ffd27a;box-shadow:0 0 0 4px rgba(255,201,51,.18)}
+  .draft-meta{display:flex;align-items:center;gap:8px;margin-top:9px}
+  .draft-meta b{font-size:11.5px;color:var(--muted);font-weight:600}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    font:inherit;border:0;cursor:pointer;border-radius:15px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .1s ease,box-shadow .2s,background .2s;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn.is-off{opacity:.45;filter:grayscale(.4)}
+  [hidden]{display:none !important}
+  .opt{
+    font-size:12px;font-weight:600;color:#a99e8e;background:#f1e9dc;
+    border-radius:999px;padding:2px 9px;margin-left:6px;vertical-align:middle;
+  }
+  .tip{margin:10px 2px 4px;font-size:13.5px;line-height:1.65;color:#7c7368}
+  .tip b{color:#4a4137}
+  .card-wrap{
+    margin-top:12px;border-radius:18px;overflow:hidden;
+    border:1px solid var(--line);background:#fff;line-height:0;
+    box-shadow:0 12px 26px -20px rgba(90,60,20,.5);
+  }
+  .card-wrap img{width:100%;display:block}
+  .btn-ghost{
+    background:#fff;color:#4a4137;font-size:13px;font-weight:650;
+    border:1px solid var(--line);padding:9px 14px;margin-left:auto;
+  }
+  .btn-primary{
+    width:100%;height:54px;margin-top:6px;    font-size:16.5px;font-weight:800;letter-spacing:.02em;color:#2a1a00;
+    background:linear-gradient(135deg,#ffd34d,#ff9f43);
+    box-shadow:0 14px 28px -14px rgba(255,140,40,.95), inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .btn-primary.done{background:linear-gradient(135deg,#8be2a8,#4cc98a);color:#0b3a22}
+  @keyframes flash{0%{background:#fff3d6}100%{background:var(--paper)}}
+  .draft-flash{animation:flash .38s ease}
+  .btn-dianping{
+    width:100%;height:50px;margin-top:10px;
+    font-size:15px;font-weight:800;letter-spacing:.02em;
+    background:#fff;color:#e8532b;border:1.5px solid #ffd3c2;
+    box-shadow:0 10px 22px -18px rgba(232,83,43,.9);
+  }
+  .btn-dianping.done{background:linear-gradient(135deg,#8be2a8,#4cc98a);color:#0b3a22;border-color:transparent}
+  .btn-second{
+    width:100%;height:46px;margin-top:10px;font-size:13.5px;font-weight:650;
+    background:rgba(255,255,255,.75);color:#5b5348;border:1px solid var(--line);
+  }
+  .hint{font-size:11.5px;color:var(--muted);text-align:center;margin:10px 0 0;line-height:1.6}
+
+  .foot{
+    margin-top:26px;padding-top:18px;border-top:1px dashed #e9dcc9;
+    font-size:11px;color:#a89b8a;text-align:center;line-height:1.7;
+  }
+  .foot-note{
+    margin:2px 0 0;font-size:10.5px;color:#bdb2a4;text-align:center;line-height:1.6;
+  }
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));
+    transform:translate(-50%,14px);
+    background:rgba(28,31,35,.94);color:#fff;font-size:13px;font-weight:600;
+    padding:11px 18px;border-radius:999px;white-space:nowrap;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .26s cubic-bezier(.2,1.4,.4,1);
+    z-index:20;backdrop-filter:blur(8px);
+  }
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* 跳转前的三步提示 */
+  .jump-tip{
+    position:fixed;inset:0;z-index:60;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(24,20,16,.55);backdrop-filter:blur(6px);
+    opacity:0;pointer-events:none;transition:opacity .22s ease;
+    padding:24px;
+  }
+  .jump-tip.on{opacity:1;pointer-events:auto}
+  .jump-card{
+    width:100%;max-width:320px;background:#fffdf9;border-radius:26px;
+    padding:26px 22px 18px;text-align:center;
+    box-shadow:0 24px 60px rgba(40,28,12,.28);
+    transform:translateY(10px) scale(.97);
+    transition:transform .26s cubic-bezier(.2,1.3,.4,1);
+  }
+  .jump-tip.on .jump-card{transform:translateY(0) scale(1)}
+  .jump-tick{
+    width:56px;height:56px;margin:0 auto 12px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#8be2a8,#4cc98a);color:#fff;
+  }
+  .jump-t1{font-size:19px;font-weight:800;color:var(--ink);letter-spacing:.02em}
+  .jump-t2{margin-top:14px;font-size:15px;font-weight:700;color:var(--ink)}
+  .jump-t2 b{color:#e8701a}
+  .jump-t3{margin-top:5px;font-size:13.5px;color:var(--muted)}
+  .jump-go{
+    width:100%;height:48px;margin-top:18px;border:0;border-radius:14px;cursor:pointer;
+    font:inherit;font-size:15.5px;font-weight:750;color:#3a2400;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));
+    box-shadow:0 8px 20px rgba(255,150,40,.3);
+  }
+  .jump-go:active{transform:scale(.985)}
+  .jump-t4{margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .jump-cancel{
+    margin-top:12px;background:none;border:0;padding:6px;cursor:pointer;
+    font:inherit;font-size:12.5px;color:#9a9184;text-decoration:underline;
+  }
+  .jump-tick.warn{background:#ffe7c2;color:#b06a00}
+  .jump-tick.warn svg{display:none}
+  .jump-tick.warn::after{content:"!";font-size:26px;font-weight:800;line-height:1}
+  .jump-manual{margin-top:4px}
+  .jump-manual textarea{
+    width:100%;height:88px;resize:none;border:1.5px solid #ffd27a;border-radius:12px;
+    background:#fffaef;color:#2b2420;font:inherit;font-size:13.5px;line-height:1.6;padding:10px 12px;
+  }
+  #appTip{
+    position:sticky;top:0;z-index:60;margin:0 0 12px;padding:10px 14px;
+    background:#fff3d6;border:1px solid #f3d18b;border-radius:12px;
+    font-size:12.5px;line-height:1.65;color:#6b4a12;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="appTip" hidden>
+  <b>在微信 / QQ 里打开的</b>：点右上角 ··· → 用浏览器打开，才能跳转到 App
+</div>
+  <div class="top">
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><path d="M5 10.5h14a7 7 0 0 1-14 0Z"/><path d="M8.5 6.6c0-1.2 1.6-1.2 1.6-2.6M13 6.6c0-1.2 1.6-1.2 1.6-2.6"/></svg>
+    </div>
+    <div class="who">
+      <h1 id="shopName">这家店</h1>
+      <p id="shopSub">选几个真实感受，帮你把话写顺</p>
+    </div>
+    <div class="pill">30 秒</div>
+  </div>
+
+  <section class="step">
+    <div class="step-head">
+      <i class="num">1</i>
+      <h2>哪些是真的？点一下</h2>
+      <span id="picked">已选 0</span>
+    </div>
+    <p class="group" id="labelFood">吃得怎么样</p>
+    <div class="chips" id="groupFood"></div>
+    <p class="group" id="labelShop">店里怎么样</p>
+    <div class="chips" id="groupShop"></div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <i class="num">2</i>
+      <h2>这段可以直接用，也能改</h2>
+      <span id="counter">0 字</span>
+    </div>
+    <div class="draft-wrap">
+      <textarea id="draft" spellcheck="false" placeholder="点一两个感受，这里自动写成一段；哪里不顺直接改。"></textarea>
+    </div>
+    <div class="draft-meta">
+      <b>改完再复制，读起来才像你</b>
+      <button class="btn btn-ghost" id="btnReroll">换一句</button>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <i class="num">3</i>
+      <h2 id="step3Title">去美团粘贴发布</h2>
+    </div>
+    <div id="goBtns"></div>
+    <button class="btn btn-second" id="btnStore">只看店铺页</button>
+    <p class="hint" id="step3Hint">打开后进「评价」，长按输入框粘贴即可</p>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <i class="num">4</i>
+      <h2>想带一张图？ <span class="opt">可选</span></h2>
+    </div>
+    <p class="tip">带图的评价更可信。用<b>你自己拍的</b>照片，我们只帮你加上店名和日期。</p>
+    <input type="file" id="photoFile" accept="image/*" hidden>
+    <button class="btn btn-second" id="btnPickPhoto">选一张照片</button>
+    <div class="card-wrap" id="cardWrap" hidden>
+      <img id="cardPreview" alt="生成的评价配图">
+    </div>
+    <p class="hint" id="cardHint" hidden>长按上面这张图 → 存到相册 → 发评价时选它</p>
+  </section>
+
+  <p class="foot" id="footText">你写的每个字，都是下一桌客人的参考</p>
+  <p class="foot-note">本页由店铺自建 · 评价内容由你本人确认后发布</p>
+</div>
+
+<div id="toast"></div>
+
+
+<div class="jump-tip" id="jumpTip" aria-hidden="true">
+  <div class="jump-card">
+    <div class="jump-tick" id="jumpTick">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 7"/></svg>
+    </div>
+    <p class="jump-t1" id="jumpT1">草稿已复制</p>
+    <p class="jump-t2" id="jumpT2">打开后点右下角 <b>评价</b></p>
+    <p class="jump-t3" id="jumpT3">长按输入框 → 粘贴 → 发布</p>
+    <div class="jump-manual" id="jumpManual" hidden>
+      <textarea id="jumpText" readonly></textarea>
+      <p class="jump-t3">上面已全选，长按选「复制」</p>
+      <button class="jump-go" id="jumpCopyAgain" type="button">再复制一次</button>
+    </div>
+    <button class="jump-go" id="jumpGo" type="button">立刻打开</button>
+    <p class="jump-t4" id="jumpCount">3 秒后自动打开…</p>
+    <button class="jump-cancel" id="jumpCancel" type="button">不用了，我自己复制</button>
+  </div>
+</div>
+
+<script>
+window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店 · 武陵区滨湖路","channel":"barber","storeUrl":"https://www.meituan.com/shop/1565935607.html","dianpingUrl":"https://m.dianping.com/shopshare/lalKsQxrxDEyXDgi?msource=Appshare2021\u0026utm_source=shop_share\u0026shoptype=50\u0026shopcategoryid=157\u0026isoversea=0\u0026shareid=1bE7joaNYi_1793585858701","douyinUrl":"https://v.douyin.com/5q9hJJQsNmk/"} };
+</script>
+<script>
+(() => {
+  "use strict";
+
+  /* ---------------- 店铺配置 ---------------- */
+  const SHOPS = window.SHOPS || {};
+  const keys = Object.keys(SHOPS);
+  const want = new URLSearchParams(location.search).get("s");
+  const shopKey = (want && SHOPS[want]) ? want : keys[0];
+  const shop = SHOPS[shopKey] || { name: "这家店", subtitle: "", storeUrl: "", deeplink: "" };
+
+  // 还是首页占位链接时不跳转：否则客人一碰就落到美团首页，看起来像坏了
+  const HAS_URL = !!shop.storeUrl || (Array.isArray(shop.platforms) && shop.platforms.length > 0);
+  const PLACEHOLDER = !HAS_URL ||
+    /^https?:\/\/(www\.|i\.)?meituan\.com\/?$/i.test(String(shop.storeUrl || "").trim());
+
+  /* ---------------- 打点：失败完全不影响使用 ---------------- */
+  const STATS_NS = window.STATS_NS || "dsh-review-v1";
+  const STATS_ON = shop.stats !== false && location.protocol !== "file:";
+  const tbl = (new URLSearchParams(location.search).get("t") || "").replace(/[^\w-]/g, "").slice(0, 8);
+
+  function ping(ev) {
+    if (!STATS_ON) return;
+    try {
+      const key = shopKey + "-" + ev + (tbl ? "-t" + tbl : "");
+      const u = "https://abacus.jasoncameron.dev/hit/" +
+        encodeURIComponent(STATS_NS) + "/" + encodeURIComponent(key);
+      fetch(u, { mode: "cors", keepalive: true, cache: "no-store" }).catch(() => {});
+    } catch (e) { /* 统计而已，坏了不吭声 */ }
+  }
+
+  document.title = "给「" + (shop.name || "这家店") + "」写条评价";
+  document.getElementById("shopName").textContent = shop.name || "这家店";
+  document.getElementById("shopSub").textContent = shop.subtitle || "选几个真实感受，帮你把话写顺";
+  if (shop.footer) document.getElementById("footText").textContent = shop.footer;
+
+  ping("view");
+
+  /* ---------------- 标签库 ---------------- */
+  // 到店：说环境、座位、上菜
+  const SHOP_DINEIN = {
+    label: "店里怎么样",
+    items: [
+      { id: "clean", text: "环境干净", phrases: [
+        "店里干净敞亮", "环境收拾得很利索", "桌面地面都是干净的", "店里清清爽爽的",
+        "卫生看着就放心", "比想象中干净", "没什么油腻感",
+      ] },
+      { id: "seat", text: "座位舒服", phrases: [
+        "座位舒服，不挤", "坐着挺自在", "桌椅宽敞，坐得住", "位子不挤，聊得开",
+        "坐着不憋屈", "座位间距也还行", "椅子坐着不硌人",
+      ] },
+      { id: "fast", text: "上菜快", phrases: [
+        "上菜很快", "点完没多久就上了", "出餐挺利索", "没等多久菜就齐了",
+        "上菜速度没得挑", "催都没催就上齐了", "等菜的时间很短",
+      ] },
+      { id: "service", text: "服务热情", phrases: [
+        "店员服务很热情", "招呼得很周到", "老板人挺和气", "有问必答，态度好",
+        "加汤加水很主动", "不催不赶，吃得踏实", "招呼得让人舒服",
+      ] },
+      { id: "easyFind", text: "位置好找", phrases: [
+        "位置好找", "交通挺方便", "地图一搜就到", "门口就是公交站",
+        "停车也还算方便", "街边一眼能看到", "不绕路，跟着导航就到",
+      ] },
+      { id: "group", text: "适合聚餐", phrases: [
+        "挺适合朋友聚餐", "带家里人来也合适", "人多也坐得下", "三五个人来吃正合适",
+        "适合下班一起聚", "一桌人吃热闹", "请客也不掉面儿",
+      ] },
+    ],
+  };
+
+  // 外卖：说包装、配送、到手的样子
+  const SHOP_WAIMAI = {
+    label: "外卖怎么样",
+    items: [
+      { id: "wpack", text: "包装干净", phrases: [
+        "包装很干净", "打包得挺利索", "盒子没漏没压", "包装看着就卫生",
+        "汤和菜是分开放的", "袋子拎着不脏手", "封口封得挺严",
+      ] },
+      { id: "wfast", text: "送得快", phrases: [
+        "送得挺快", "下单没多久就到了", "比预估时间还早", "高峰期也没拖",
+        "差不多半小时就到", "送餐速度在线", "骑手来得很准时",
+      ] },
+      { id: "whot", text: "到手还热乎", phrases: [
+        "到手还是热的", "汤都没凉", "打开还冒热气", "到手里温度刚好",
+        "一点没凉透", "热乎得跟刚出锅似的", "还烫手",
+      ] },
+      { id: "wfull", topic: "portion", text: "给得实在", phrases: [
+        "分量给得实在", "一份能吃饱", "菜量比堂食还足", "一个人吃撑了",
+        "肉给得不抠", "一大盒实打实", "盖不上盖的那种足",
+      ] },
+      { id: "wclean", text: "没洒汤", phrases: [
+        "汤一点没洒", "没弄得到处都是", "汤汁一点没漏", "到手还是整整齐齐",
+        "没洒没漏没压扁", "打开干干净净", "袋子也是清爽的",
+      ] },
+      { id: "wprice", topic: "value", text: "价格合适", phrases: [
+        "这个价挺合适", "比堂食还划算", "用完券更值", "人均不高，吃得好",
+        "价格挺良心", "花这个钱不心疼", "算下来一餐很便宜",
+      ] },
+    ],
+  };
+
+  // 到店服务业（美容/美发/口腔/汽修/宠物…）：说手艺、效果、有没有推销
+  const SHOP_SERVICE = {
+    label: "服务怎么样",
+    items: [
+      { id: "nosell", text: "不推销", phrases: [
+        "全程不推销", "没有硬推办卡", "不会一直劝你加项目", "耳根子清静",
+        "推得很有分寸", "不会跟你绕话", "该说的说完就干活", "不催着充卡",
+      ] },
+      { id: "sclean", text: "干净卫生", phrases: [
+        "店里很干净", "器具都消过毒", "一次性的当面拆", "毛巾是新的",
+        "操作台收拾得利索", "卫生这块放心", "没什么异味",
+      ] },
+      { id: "explain", text: "讲得清楚", phrases: [
+        "会先问清我的需求", "过程都讲明白了", "注意事项交代得细", "有问都耐心答",
+        "不会糊里糊涂就动手", "价格和项目先说清楚", "该注意的都提醒了",
+      ] },
+      { id: "wait", text: "等候不久", phrases: [
+        "等候时间不长", "到店就安排上了", "没排太久", "约的时间基本不拖",
+        "不用干等着", "去了就能做", "节奏安排得挺好",
+      ] },
+      { id: "sservice", text: "态度好", phrases: [
+        "招呼得客气", "服务态度很好", "说话让人舒服", "细节上很照顾",
+        "全程没什么不耐烦", "有问题马上处理", "人挺实在的",
+      ] },
+      { id: "rec", text: "值得推荐", phrases: [
+        "朋友问我会推荐", "会带家里人再来", "值得专门跑一趟", "会介绍给同事",
+        "身边人问起来会说好", "这家可以放心推给朋友",
+      ] },
+    ],
+  };
+
+  // 理发店：客人真会看细节，所以话可以说得具体一些、长一些
+  const SHOP_BARBER = {
+    label: "店里怎么样",
+    items: [
+      { id: "bnosell", text: "不推销", phrases: [
+        "全程不推销", "没有一直劝你办卡", "不硬推护理套餐", "耳根子清静",
+        "推得很有分寸", "剪完不再兜售项目", "不会绕话让你升单", "该说的说完就干活",
+      ] },
+      { id: "bwash", text: "洗头舒服", phrases: [
+        "洗头很舒服", "按摩得挺到位", "水温调得刚好", "洗头的时候差点睡着",
+        "洗得很仔细，不糊弄", "头皮都给我按松了", "冲得干净不刺眼",
+      ] },
+      { id: "bclean", text: "干净卫生", phrases: [
+        "工具当面消毒", "毛巾是新的", "围布干净", "地上没头发渍",
+        "推子和剪刀都擦过", "店里收拾得清爽", "用的东西放心",
+      ] },
+      { id: "bonTime", text: "预约准时", phrases: [
+        "约的几点就是几点", "到店不用等位", "不让你干坐着", "时间掐得很准",
+        "不会拖着你", "上一单拖了会提前说", "排得明白",
+      ] },
+      { id: "bprice", text: "价格透明", phrases: [
+        "报多少收多少", "没临时加价", "不塞套餐给你", "价格先说清楚",
+        "这个价挺实在", "剪这个手艺值这个钱", "不玩花活",
+      ] },
+      { id: "benv", text: "环境舒服", phrases: [
+        "店里安静不吵", "椅子坐着舒服", "空调温度刚好", "有茶水，能等",
+        "放的音乐不吵", "光线好，剪完看得清", "进去就不想走",
+      ] },
+    ],
+  };
+
+  const GROUPS = {
+    food: {
+      label: "吃得怎么样",
+      items: [
+        { id: "taste", topic: "taste", text: "味道好", phrases: [
+          "菜品味道很在线", "口味挺惊喜的", "吃着是真香", "味道很正",
+          "调味不重不淡，刚刚好", "味道比想象中好", "一口下去就知道对了", "越吃越想吃",
+        ] },
+        { id: "portion", text: "分量足", phrases: [
+          "分量给得足", "一份下去就饱了", "菜量不小", "两个人点两份都吃不完",
+          "肉菜都给得实在", "端上来是满满一盘", "吃到最后还剩一点",
+        ] },
+        { id: "fresh", text: "食材新鲜", phrases: [
+          "食材新鲜，吃着放心", "用料挺实在", "菜是现做的", "青菜还是脆的",
+          "肉不柴也不散", "汤底能喝出是熬出来的", "没有那种放久了的味儿",
+        ] },
+        { id: "local", topic: "taste", text: "口味地道", phrases: [
+          "口味很地道", "就是本地那个味道", "调料是本地那一口", "吃着像本地人开的",
+          "跟老家那口对得上", "有老街那家老店的味儿", "这口很对本地的胃口",
+        ] },
+        { id: "value", text: "性价比高", phrases: [
+          "价格实惠，性价比很高", "人均不高但吃得很满足", "这个价位算良心", "花得不多，吃得挺值",
+          "比同价位的都强", "不贵，还能吃好", "这个价能吃成这样不错了",
+        ] },
+        { id: "signature", text: "招牌菜值得点", phrases: [
+          "招牌菜值得点", "点的几样都没踩雷", "照着招牌点不会错", "招牌那道确实有东西",
+          "盲点也不翻车", "几道招牌都站得住", "招牌点完还想再点",
+        ] },
+      ],
+    },
+    shop: shop.channel === "waimai" ? SHOP_WAIMAI
+        : shop.channel === "service" ? SHOP_SERVICE
+        : shop.channel === "barber" ? SHOP_BARBER
+        : SHOP_DINEIN,
+  };
+
+  // 理发的第一组：说剪得好不好、听不听需求
+  if (shop.channel === "barber") {
+    GROUPS.food = {
+      label: "剪得怎么样",
+      items: [
+        { id: "bcraft", text: "手艺专业", phrases: [
+          "手艺确实在线", "剪得比我描述的好", "不用反复解释就懂", "下剪很稳",
+          "该收的地方都收了", "细节修得干净", "一看就是老手", "手上功夫看得出来",
+        ] },
+        { id: "bshape", text: "剪完有型", phrases: [
+          "剪完照镜子挺满意", "显脸小", "层次感出来了", "不用打理也有形",
+          "发型立得住", "比照片上还好看", "同事都说精神了", "出门就能见人",
+        ] },
+        { id: "bcolor", text: "染烫到位", phrases: [
+          "染的颜色很正", "不闷不假", "看得出调过色", "烫完不毛躁",
+          "卷度自然", "颜色衬肤色", "没有那种撞头发廊感",
+        ] },
+        { id: "bneed", text: "会听需求", phrases: [
+          "先问我平时怎么打理", "会跟我确认想要的效果", "不自作主张",
+          "我说要短他就真剪短", "会提醒哪种不适合我", "听得懂人话",
+        ] },
+        { id: "btime", text: "不拖时间", phrases: [
+          "按时间收尾", "不拖着你做别的项目", "说多久就多久",
+          "剪完不硬留你", "节奏安排得刚好",
+        ] },
+      ],
+    };
+  }
+
+  // 服务业的第一组不是「吃」，换成手艺和效果
+  if (shop.channel === "service") {
+    GROUPS.food = {
+      label: "做得怎么样",
+      items: [
+        { id: "sskill", text: "手艺专业", phrases: [
+          "手法很专业", "下手有分寸", "能按到点子上", "师傅一看就是老手",
+          "做得挺细致", "力道刚好", "全程不糊弄", "手上功夫看得出来",
+        ] },
+        { id: "seffect", text: "效果明显", phrases: [
+          "做完效果挺明显", "比预期好", "当场就看得出变化", "肉眼可见的改善",
+          "效果撑得住", "不是做完就散的那种", "确实有用",
+        ] },
+        { id: "smaterial", text: "用料放心", phrases: [
+          "用的材料放心", "东西是正品", "耗材不省着用", "该用的一点不含糊",
+          "产品愿意给你看", "用料上没打折",
+        ] },
+        { id: "sprice", text: "价格透明", phrases: [
+          "价格说得清清楚楚", "没有隐形消费", "报多少收多少", "不临时加钱",
+          "比别家实在", "花的钱对得起效果",
+        ] },
+        { id: "stime", text: "时间准", phrases: [
+          "说多久就多久", "没拖时间", "不催不赶", "时间安排得刚好",
+          "做完不慌不忙", "节奏挺舒服",
+        ] },
+      ],
+    };
+  }
+
+  const DINEIN_OPENERS = [
+    "今天过来吃的", "下班顺便来吃的", "周末和朋友来吃的", "第一次来这家",
+    "路过进来试的", "带家里人来的", "同事推荐来吃的", "晚上过来吃的",
+    "中午就近吃的", "朋友带我来吃的", "慕名过来的", "刚好在附近过来吃的",
+    "天冷了想吃口热的", "临时找的一家", "第二次来了", "跟对象一起来的",
+    "一个人来吃的", "加班完过来吃的", "老客了又来的", "听说开了挺久来试试",
+    "朋友说这家不错就来了", "晚饭没想好随便进的", "路过好几次第一次进", "想吃这口就来了",
+  ];
+
+  const WAIMAI_OPENERS = [
+    "这次点的外卖", "点过好几次了", "第一次点这家", "同事推荐点的",
+    "加班点的这顿", "一个人不知道吃啥", "下雨懒得出门点的", "中午拼单点的",
+    "看评分点的", "半夜饿了点的", "第二次点了", "朋友推的这家",
+    "试了试新店", "顺手点的一家", "办公室一起点的", "想吃口热的就点了",
+    "天冷在家点的", "常点的一家", "换了家试试", "赶时间随便点的",
+  ];
+
+  const SERVICE_OPENERS = [
+    "第一次来做", "朋友推荐来的", "路过进来问的", "预约过来的",
+    "老客了又来的", "陪家里人来的", "同事介绍来的", "看了评分来的",
+    "第二次过来了", "想试试就约的", "刚好路过进来", "网上找的一家",
+    "有人推荐这家", "上班路过看到的", "临时约上的", "冲着口碑来的",
+    "本来只打算问问", "犹豫了挺久才来", "朋友说这家行", "顺手约的一回",
+  ];
+
+  const BARBER_OPENERS = [
+    "第一次来这家", "在这剪了两年了", "朋友推荐来的", "路过进来剪的",
+    "预约过来的", "换了家试试", "剪前先聊了半天需求", "同事介绍来的",
+    "看评价找来的", "第二次过来了", "本来只想修一修", "想换个发型就来这家了",
+    "听朋友说这家剪得细", "下班顺路进来的", "冲着评价来的", "约了挺久才约上",
+    "之前那家剪腻了", "想剪短一点就进来了",
+  ];
+
+  const BARBER_PLAIN = ["这一趟", "这次剪下来", "今天过来", "整完", "剪完出来", "坐下来聊完"];
+
+  const OPENERS = shop.channel === "waimai" ? WAIMAI_OPENERS
+    : shop.channel === "service" ? SERVICE_OPENERS
+    : shop.channel === "barber" ? BARBER_OPENERS
+    : DINEIN_OPENERS;
+
+  // 正文以「吃」开头时换一套开头，免得「…来吃的，吃着是真香」
+  const DINEIN_PLAIN = [
+    "今天过来的", "下班顺路过来的", "周末过来的", "头一次来这儿",
+    "中午过来的", "晚上过来的", "朋友带我来的", "路过进来的",
+    "刚好在附近", "这次过来", "老客过来", "第二次过来",
+  ];
+  const WAIMAI_PLAIN = ["这一单", "这次", "今天这顿", "今晚这顿", "中午这顿", "这一份"];
+
+  const SERVICE_PLAIN = ["这次过来", "今天过来", "这一趟", "这次做下来", "头一回过来", "整体下来"];
+
+  const OPENERS_PLAIN = shop.channel === "waimai" ? WAIMAI_PLAIN
+    : shop.channel === "service" ? SERVICE_PLAIN
+    : shop.channel === "barber" ? BARBER_PLAIN
+    : DINEIN_PLAIN;
+
+  const CONNECT = ["，", "，", "，", "，而且", "，另外", "，加上", "，还有",
+                   "，关键是", "，最难得的是", "，更难得的是"];
+
+  const BRIDGES = shop.channel === "waimai"
+    ? ["吃下来挺舒服", "跟店里一个味儿", "整体没什么可挑的", "比预期好",
+       "送来的样子挺整", "这份没让人失望", "各方面都挺稳"]
+    : shop.channel === "service"
+    ? ["整体体验不错", "没什么可挑的", "比预想的省心", "过程挺舒服",
+       "该做的都做到位了", "细节上没糊弄", "全程挺自在"]
+    : shop.channel === "barber"
+    ? ["整体挺满意", "没让我失望", "比之前那家强", "细节上没糊弄",
+       "剪完心情都好了", "该说的都说到位了", "出门回头率还行"]
+    : ["吃下来挺舒服", "整体感觉不错", "没什么可挑的", "分量和味道都对得上",
+       "这顿吃得挺踏实", "比预期好", "各方面都挺稳", "该有的都有",
+       "挑不出什么毛病", "吃完心情挺好"];
+
+  const CLOSINGS = shop.channel === "waimai"
+    ? ["下次还点。", "这个价，值了。", "没踩雷，放心点。", "会回购。", "整体挺满意。",
+       "推荐试试。", "已经加收藏了。", "下次再点一份。", "值这个价，推荐点。",
+       "会推荐给同事。", "这单点得不亏。", "以后常点。", "还想再点。",
+       "没让人失望。", "认这家了。", "会存进收藏。"]
+    : shop.channel === "service"
+    ? ["下次还来。", "会推荐给朋友。", "办了卡，长期做。", "这个价，值。", "会再来做一次。",
+       "放心推荐。", "认这家了。", "服务到位，值这个价。", "下个月再来。",
+       "会带朋友一起。", "没挑出毛病。", "以后就定这家了。", "比之前去的那家强。",
+       "值得专门跑一趟。", "还会再来。"]
+    : shop.channel === "barber"
+    ? ["以后就定这家了。", "已经办卡了。", "会推荐给同事。", "这个价剪成这样，值。",
+       "下次还找他。", "放心推荐。", "认这家了。", "剪完想拍照。", "会带朋友来。",
+       "剪完照镜子挺满意。", "下次还来这家。", "比之前那家靠谱。", "不换人了。",
+       "会一直在这剪。", "朋友问就推这家。"]
+    : ["整体挺满意，会再来。", "下次还想来。", "值这个价，推荐试试。",
+       "没踩雷，可以放心来。", "吃得挺舒服，会回购。", "总的来说不亏。",
+       "会带朋友再来。", "值得专门跑一趟。", "这个价，挺值。", "还想再来吃一次。",
+       "朋友问起我会推荐。", "以后路过还会来。", "这顿吃得很满足。", "认了，会成为常客。",
+       "整体没毛病。", "推荐给同城的朋友。"];
+
+  const picked = new Set();
+  const pick = (arr) => arr[(Math.random() * arr.length) | 0];
+  const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
+  // 理发店的评价大家愿意多看几行，所以允许多选一个点、字数放宽
+  const LIMITS = shop.channel === "barber"
+    ? { pick: 4, soft: 64, hard: 96 }
+    : { pick: 3, soft: 36, hard: 50 };
+  const MAX_PICK = LIMITS.pick;
+
+  /* ---------------- 渲染 chips ---------------- */
+  document.getElementById("labelFood").textContent = GROUPS.food.label;
+  document.getElementById("labelShop").textContent = GROUPS.shop.label;
+
+  function buildChips(groupKey) {
+    const host = document.getElementById(groupKey === "food" ? "groupFood" : "groupShop");
+    const frag = document.createDocumentFragment();
+    for (const item of GROUPS[groupKey].items) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip";
+      b.textContent = item.text;
+      b.dataset.id = item.id;
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("click", () => {
+        const on = picked.has(item.id);
+        if (!on && picked.size >= MAX_PICK) return toast(MAX_PICK > 3 ? "四个就够了，再多就像写作文了" : "三个就够了，多了反倒啰嗦");
+        if (on) picked.delete(item.id);
+        else picked.add(item.id);
+        b.setAttribute("aria-pressed", String(!on));
+        if (navigator.vibrate) navigator.vibrate(8);
+        document.getElementById("picked").textContent = "已选 " + picked.size;
+        if (!on) compose();
+        else if (picked.size === 0) document.getElementById("draft").value = "";
+        updateCounter();
+      });
+      frag.appendChild(b);
+    }
+    host.appendChild(frag);
+  }
+  buildChips("food");
+  buildChips("shop");
+
+  const allItems = [...GROUPS.food.items, ...GROUPS.shop.items];
+
+  /* ---------------- 生成草稿 ---------------- */
+  const draftEl = document.getElementById("draft");
+
+  // 最近用过的开头/收尾，连着点「换一句」时不会一直撞同一句
+  const recentOpen = [];
+  const recentClose = [];
+  function pickFresh(arr, recent) {
+    for (let i = 0; i < 6; i++) {
+      const v = pick(arr);
+      if (!recent.includes(v)) return v;
+    }
+    return pick(arr);
+  }
+
+  function compose() {
+    const chosen = allItems.filter((i) => picked.has(i.id));
+    if (!chosen.length) return;
+
+    // 一段话，最多用 3 个点（选的时候已经限住了）—— 再长就写成清单了
+    const chosen3 = shuffle(chosen).slice(0, MAX_PICK);
+    // 同一个话题只留一句（「味道好」和「口味地道」是同一个话题）
+    const seenTopic = new Set();
+    const parts = [];
+    for (const item of chosen3) {
+      const t = item.topic || item.id;
+      if (seenTopic.has(t)) continue;
+      seenTopic.add(t);
+      parts.push(pick(item.phrases));
+    }
+    if (!parts.length) parts.push(pick(chosen3[0].phrases));
+
+    const closing = pickFresh(CLOSINGS, recentClose);
+
+    // 四种写法轮着来，句子的骨架不至于每次都一样
+    function render(list) {
+      const conns = shuffle(CONNECT);
+      let body = list[0];
+      for (let i = 1; i < list.length; i++) body += conns[i - 1] + list[i];
+      const op = body.startsWith("吃") ? pickFresh(OPENERS_PLAIN, recentOpen) : pickFresh(OPENERS, recentOpen);
+      const shape = Math.random();
+      let t;
+      if (shape < 0.50) {
+        t = op + "，" + body + "。";            // 开头 + 一段
+      } else if (shape < 0.66) {
+        t = body + "。";                         // 直接从感受说起
+      } else if (shape < 0.84 && list.length >= 2) {
+        // 拆成两句：第一句说一半，第二句接着补
+        const cut = 1 + ((Math.random() * (list.length - 1)) | 0);
+        const head = list.slice(0, cut).join(conns[0] || "，");
+        const tail = list.slice(cut).join(conns[1] || "，");
+        t = op + "，" + head + "。" + tail + "。";
+      } else {
+        t = op + "，" + body + "。";
+      }
+      return { t, body, op };
+    }
+
+    // 长了就少说一个点，别让客人读一大段
+    let list = parts.slice();
+    let r = render(list);
+    while (r.t.length > LIMITS.soft && list.length > 1) {
+      list.pop();
+      r = render(list);
+    }
+    let text = r.t;
+
+    // 一句到底时补半句缓和，读起来不那么硬
+    const sentences = text.split("。").filter(Boolean).length;
+    if (sentences <= (LIMITS.pick > 3 ? 2 : 1) && ((chosen.length <= 2 && Math.random() < 0.6) || Math.random() < 0.3)) {
+      for (let i = 0; i < 3; i++) {
+        const bridge = pick(BRIDGES);
+        if (!shareWord(bridge, closing) && !text.includes(bridge)) {
+          if ((text + bridge).length + closing.length <= LIMITS.hard - 2) text += bridge + "。";
+          break;
+        }
+      }
+    }
+
+    // 偶尔用感叹号收尾，别全都一个调子
+    text += Math.random() < 0.10 ? closing.replace("。", "！") : closing;
+
+    if (text.length > LIMITS.hard) text = r.op + "，" + r.body + "。" + closing;
+    if (text.length > LIMITS.hard) text = r.body + "。" + closing;
+    const opener = r.op;
+
+    recentOpen.push(opener);
+    recentClose.push(closing);
+    if (recentOpen.length > 6) recentOpen.shift();
+    if (recentClose.length > 6) recentClose.shift();
+
+    draftEl.value = text;
+    updateCounter();
+    syncGoState();
+  }
+
+  // 没选感受时，底下的发布按钮是灰的 —— 避免点了半天没东西可复制
+  function syncGoState() {
+    const empty = !draftEl.value.trim();
+    document.querySelectorAll("#goBtns .btn").forEach((b) => {
+      b.classList.toggle("is-off", empty);
+      b.disabled = empty;
+    });
+  }
+
+  // 粗查重：两个字的词重叠就算撞了（「口味」「味道」先归成一个字）
+  function shareWord(a, b) {
+    const norm = (s) => String(s).replace(/口味|味道|味儿/g, "味");
+    const x = norm(a), y = norm(b);
+    const overlap = (m, n) => {
+      for (let i = 0; i < m.length - 1; i++) if (n.includes(m.slice(i, i + 2))) return true;
+      return false;
+    };
+    return overlap(x, y) || overlap(y, x);
+  }
+
+  function updateCounter() {
+    document.getElementById("counter").textContent = draftEl.value.length + " 字";
+  }
+
+  draftEl.addEventListener("input", updateCounter);
+
+  document.getElementById("btnReroll").addEventListener("click", () => {
+    if (!picked.size) return toast("先点一两个感受吧");
+    compose();
+    draftEl.classList.add("draft-flash");
+    setTimeout(() => draftEl.classList.remove("draft-flash"), 400);
+  });
+
+  /* ---------------- 复制 ---------------- */
+  // 老办法：造一个隐藏的输入框选中再 execCommand，比直接选草稿更稳（不会让页面乱滚）
+  function legacyCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:-9999px;opacity:0";
+    document.body.appendChild(ta);
+    let ok = false;
+    try {
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand("copy");
+    } catch (e) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+
+  // 有些手机浏览器（vivo/小米自带浏览器）clipboard 的 Promise 会一直挂起，
+  // 导致点了按钮什么都没发生 —— 这里加超时，超过 800ms 直接走老办法。
+  function withTimeout(promise, ms) {
+    return new Promise((resolve) => {
+      let done = false;
+      const t = setTimeout(() => { if (!done) { done = true; resolve("timeout"); } }, ms);
+      promise.then(
+        (v) => { if (!done) { done = true; clearTimeout(t); resolve(v); } },
+        (e) => { if (!done) { done = true; clearTimeout(t); resolve("error"); } }
+      );
+    });
+  }
+
+  async function copyText(text) {
+    if (!text.trim()) return false;
+    if (navigator.clipboard && window.isSecureContext) {
+      const r = await withTimeout(navigator.clipboard.writeText(text), 800);
+      if (r === undefined) return true;          // 正常完成
+    }
+    return legacyCopy(text);
+  }
+
+  /* ---------------- 跳转（美团 / 大众点评） ---------------- */
+  let jumping = false;
+
+  // 外卖和到店的评价入口不一样，别再让人满头找「评价」两个字
+  const HINT_WHERE = shop.channel === "waimai"
+    ? '打开后点「我的」→「订单」→ <b>待评价</b>'
+    : '打开店铺页，点里面的 <b>评价</b>';
+
+  const jumpTip = document.getElementById("jumpTip");
+  const jumpCount = document.getElementById("jumpCount");
+  const jumpT1 = document.getElementById("jumpT1");
+  const jumpT2 = document.getElementById("jumpT2");
+  const jumpT3 = document.getElementById("jumpT3");
+  const jumpManual = document.getElementById("jumpManual");
+  const jumpText = document.getElementById("jumpText");
+  const jumpGo = document.getElementById("jumpGo");
+  let jumpUrl = "", jumpTimer = null, jumpTick = null;
+
+  function hideJump() {
+    clearTimeout(jumpTimer);
+    clearInterval(jumpTick);
+    jumpTip.classList.remove("on");
+    jumpTip.setAttribute("aria-hidden", "true");
+  }
+
+  // mode: "" 正常（草稿已复制）｜ "manual" 复制失败，手动长按 ｜ "fail" 没跳过去，复制链接
+  function showJump(url, mode) {
+    jumpUrl = url;
+    clearTimeout(jumpTimer);
+    clearInterval(jumpTick);
+
+    const fail = mode === "fail";
+    const manual = mode === "manual" || fail;
+
+    const okMode = !fail && !manual;
+    document.getElementById("jumpTick").classList.toggle("warn", !okMode);
+    jumpT1.textContent = fail ? "没自动跳过去" : (manual ? "复制没成功" : "草稿已复制");
+    jumpT2.innerHTML = fail ? "长按上面链接 → 复制 → 粘到浏览器"
+      : (manual ? "长按上面那段字 → 复制" : HINT_WHERE);
+    jumpT3.textContent = fail ? "或者在 App 里搜店名，一样能评"
+      : (manual ? "复制好再点下面「立刻打开」" : "长按输入框 → 粘贴 → 发布");
+    jumpGo.textContent = fail ? "再试一次" : "立刻打开";
+
+    jumpManual.hidden = !manual;
+    if (manual) {
+      jumpText.value = fail ? url : draftEl.value;
+      jumpCount.textContent = "";
+    } else {
+      let n = 3;
+      jumpCount.textContent = n + " 秒后自动打开…";
+      jumpTick = setInterval(() => {
+        n -= 1;
+        jumpCount.textContent = n > 0 ? n + " 秒后自动打开…" : "正在打开…";
+      }, 1000);
+      jumpTimer = setTimeout(() => { hideJump(); openUrl(jumpUrl); }, 2600);
+    }
+
+    jumpTip.classList.add("on");
+    jumpTip.setAttribute("aria-hidden", "false");
+
+    if (manual) {
+      // 自动选中，客人直接长按就能复制
+      setTimeout(() => {
+        jumpText.focus();
+        jumpText.select();
+        jumpText.setSelectionRange(0, jumpText.value.length);
+      }, 80);
+    }
+  }
+
+  jumpGo.addEventListener("click", () => { hideJump(); openUrl(jumpUrl); });
+  document.getElementById("jumpCancel").addEventListener("click", hideJump);
+  document.getElementById("jumpCopyAgain").addEventListener("click", async () => {
+    const ok = await copyText(jumpText.value);
+    toast(ok ? "已复制 ✓" : "还是不行，长按框里的字选「复制」");
+    if (ok && jumpText.value === draftEl.value) showJump(jumpUrl);
+  });
+
+  function openUrl(url) {
+    if (jumping || !url) return;
+    jumping = true;
+
+    let left = false;
+    const onHide = () => { left = true; };
+    document.addEventListener("visibilitychange", onHide, { once: true });
+
+    location.href = url;
+
+    // 1.6 秒还停在页面上 = 没跳成功（常见于微信内置浏览器），把链接给他复制
+    setTimeout(() => {
+      document.removeEventListener("visibilitychange", onHide);
+      jumping = false;
+      if (left) return;
+      showJump(url, "fail");
+    }, 1600);
+  }
+
+  /* ---------------- 平台按钮（美团 / 大众点评 / 抖音团购） ---------------- */
+  const PLATFORMS = (() => {
+    if (Array.isArray(shop.platforms) && shop.platforms.length) return shop.platforms;
+    const list = [];
+    if (shop.storeUrl) list.push({ id: "meituan", name: "美团", url: shop.storeUrl });
+    if (shop.dianpingUrl) list.push({ id: "dianping", name: "大众点评", url: shop.dianpingUrl });
+    if (shop.douyinUrl) list.push({ id: "douyin", name: "抖音团购", url: shop.douyinUrl });
+    return list;
+  })();
+
+  const ICON = {
+    meituan: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h7a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M12 11v7M9 15l3 3 3-3"/></svg>',
+    dianping: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8.5 10.5l1.6 1.6 3.4-3.4"/></svg>',
+    douyin: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9.2v5.6l4.6-2.8z"/></svg>',
+  };
+
+  const goBtns = document.getElementById("goBtns");
+  const btnStore = document.getElementById("btnStore");
+  const btnHTML = new Map();
+
+  PLATFORMS.forEach((p, idx) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn " + (idx === 0 ? "btn-primary" : "btn-dianping");
+    b.dataset.platform = p.id;
+    b.innerHTML = (ICON[p.id] || ICON.meituan) + "复制草稿，打开" + (p.name || "App");
+    b.addEventListener("click", () => goWithDraft(b, p));
+    btnHTML.set(b, b.innerHTML);
+    goBtns.appendChild(b);
+  });
+  btnHTML.set(btnStore, btnStore.innerHTML);
+  syncGoState();
+
+  const step3Title = document.getElementById("step3Title");
+  const step3Hint = document.getElementById("step3Hint");
+  if (PLATFORMS.length > 1) {
+    step3Title.textContent = "去发布（" + PLATFORMS.map((p) => p.name).join(" / ") + "）";
+    btnStore.hidden = true;
+  } else if (PLATFORMS.length === 1) {
+    step3Title.textContent = "去" + PLATFORMS[0].name + "粘贴发布";
+  }
+  // 点评 / 抖音 必须先装 App，不装点了没反应 —— 提前说清楚，别让人以为坏了
+  const NEEDAPP = PLATFORMS.some((p) => p.id === "dianping" || p.id === "douyin");
+  if (NEEDAPP && step3Hint) {
+    step3Hint.textContent = "打开后进「评价」，长按输入框粘贴即可 · 点评/抖音需先装 App";
+  }
+
+  // 复制草稿 → 反馈 → 跳转
+  let copyFallback = false;
+  async function goWithDraft(btn, platform) {
+    const url = platform.url;
+    if (PLACEHOLDER && platform.id === "meituan") return toast("还没填店铺链接，见 README 第五节");
+    if (!url) return toast("还没配置" + (platform.name || "") + "链接");
+    if (!draftEl.value.trim()) { toast("先在上面点一两个感受"); return; }
+
+    // 先给个即时反馈，别让人以为点了没反应
+    const old = btn.innerHTML;
+    btn.innerHTML = "复制中…";
+    btn.disabled = true;
+    setTimeout(() => { if (btn.disabled) { btn.disabled = false; btn.innerHTML = old; } }, 2500);
+
+    const ok = await copyText(draftEl.value);
+    btn.disabled = false;
+    if (ok) {
+      ping("copy");
+      btn.classList.add("done");
+      btn.textContent = "已复制 ✓";
+      setTimeout(() => {
+        btn.classList.remove("done");
+        btn.innerHTML = btnHTML.get(btn);
+      }, 2400);
+      showJump(url);
+    } else {
+      // 复制被浏览器挡了：弹出全选好的草稿，让他长按复制（点按钮也能再试一次）
+      copyFallback = true;
+      showJump(url, "manual");
+    }
+  }
+
+  btnStore.addEventListener("click", () => {
+    if (PLACEHOLDER) return toast("还没填店铺链接，见 README 第五节");
+    openUrl(shop.storeUrl);
+  });
+
+  /* ---------------- 在微信/QQ 里打开时给个提示 ---------------- */
+  if (/MicroMessenger|QQ\/[0-9]|Weibo|aweme|AlipayClient/i.test(navigator.userAgent || "")) {
+    document.getElementById("appTip").hidden = false;
+  }
+
+  /* ---------------- 可选：用客人的照片生成一张配图 ---------------- */
+  const photoFile = document.getElementById("photoFile");
+  const cardWrap = document.getElementById("cardWrap");
+  const cardPreview = document.getElementById("cardPreview");
+  const cardHint = document.getElementById("cardHint");
+
+  document.getElementById("btnPickPhoto").addEventListener("click", () => photoFile.click());
+
+  photoFile.addEventListener("change", () => {
+    const f = photoFile.files && photoFile.files[0];
+    if (!f) return;
+
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          cardPreview.src = drawReviewCard(img);
+          cardWrap.hidden = false;
+          cardHint.hidden = false;
+          cardWrap.scrollIntoView({ behavior: "smooth", block: "center" });
+          ping("photo");
+        } catch (e) {
+          toast("这张图处理不了，换一张试试");
+        }
+      };
+      img.onerror = () => toast("这张图读不出来，换一张试试");
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(f);
+  });
+
+  // 1080×1350：上面是照片，下面是店名、日期和这段草稿
+  function drawReviewCard(photo) {
+    const W = 1080, H = 1350, PH = 1010;
+    const cv = document.createElement("canvas");
+    cv.width = W;
+    cv.height = H;
+    const g = cv.getContext("2d");
+
+    // 照片按 cover 裁切
+    const r = Math.max(W / photo.width, PH / photo.height);
+    const dw = photo.width * r, dh = photo.height * r;
+    g.drawImage(photo, (W - dw) / 2, (PH - dh) / 2, dw, dh);
+
+    // 照片底部压暗，和下面的纸色接上
+    const grad = g.createLinearGradient(0, PH - 240, 0, PH);
+    grad.addColorStop(0, "rgba(0,0,0,0)");
+    grad.addColorStop(1, "rgba(12,10,8,.66)");
+    g.fillStyle = grad;
+    g.fillRect(0, PH - 240, W, 240);
+
+    g.fillStyle = "#fffaf3";
+    g.fillRect(0, PH, W, H - PH);
+
+    g.textBaseline = "top";
+    g.fillStyle = "#14181d";
+    g.font = "700 44px 'Microsoft YaHei', 'PingFang SC', sans-serif";
+    g.fillText(shop.name || "这家店", 64, PH + 54);
+
+    const d = new Date();
+    g.fillStyle = "#8a8177";
+    g.font = "400 24px 'Microsoft YaHei', 'PingFang SC', sans-serif";
+    g.fillText(d.getFullYear() + "." + (d.getMonth() + 1) + "." + d.getDate(), 66, PH + 112);
+
+    const text = (draftEl.value || "").trim();
+    if (text) {
+      g.fillStyle = "#3d3833";
+      g.font = "400 29px 'Microsoft YaHei', 'PingFang SC', sans-serif";
+      wrapText(g, text, W - 128, 2).forEach((ln, i) => g.fillText(ln, 64, PH + 168 + i * 44));
+    }
+
+    return cv.toDataURL("image/jpeg", 0.92);
+  }
+
+  // 中文按字宽断行，最多 maxLines 行，超出加省略号
+  function wrapText(g, text, maxW, maxLines) {
+    const lines = [];
+    let cur = "";
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (g.measureText(cur + ch).width <= maxW) {
+        cur += ch;
+        continue;
+      }
+      if (lines.length === maxLines - 1) {
+        let tail = cur;
+        while (tail.length && g.measureText(tail + "…").width > maxW) tail = tail.slice(0, -1);
+        lines.push(tail + "…");
+        return lines;
+      }
+      lines.push(cur);
+      cur = ch;
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  }
+
+  // 配了大众点评就多给一个入口，把「只看店铺页」收起来（两个平台各自独立，评价也不互通）
+  if (shop.dianpingUrl) {
+    btnDianping.hidden = false;
+    btnStore.hidden = true;
+    document.getElementById("step3Title").textContent = "去发布（美团 / 大众点评）";
+    document.getElementById("step3Hint").textContent = "两个平台评价不互通，同一段话可以两边各发一次";
+  }
+
+  /* ---------------- toast ---------------- */
+  let toastTimer = 0;
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("on"), 1900);
+  }
+
+  /* ---------------- 首屏 ---------------- */
+  if (PLACEHOLDER) {
+    document.getElementById("shopSub").textContent = "演示数据 · 记得改 config.js";
+  }
+  updateCounter();
+})();
+</script>
+<script>
+(function(){
+  const dot = document.createElement("div");
+  dot.style.cssText = "position:fixed;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;background:rgba(255,0,0,.75);z-index:99998;pointer-events:none;display:none";
+  document.body.appendChild(dot);
+  const info = document.createElement("div");
+  info.style.cssText = "position:fixed;left:0;right:0;bottom:0;background:#111;color:#0f0;font:13px monospace;padding:6px;z-index:99999;white-space:pre-wrap";
+  document.body.appendChild(info);
+  let log = [];
+  document.addEventListener("click", (e) => {
+    dot.style.display = "block";
+    dot.style.left = e.clientX + "px";
+    dot.style.top = e.clientY + "px";
+    log.push("click " + e.clientX + "," + e.clientY + " -> " + (e.target.className || e.target.tagName));
+    info.textContent = log.slice(-3).join("\n") + "\ndpr=" + window.devicePixelRatio + " vw=" + window.innerWidth;
+  }, true);
+})();
+</script></body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
