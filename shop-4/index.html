@@ -408,6 +408,37 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
     ],
   };
 
+  // 理发店：客人真会看细节，所以话可以说得具体一些、长一些
+  const SHOP_BARBER = {
+    label: "店里怎么样",
+    items: [
+      { id: "bnosell", text: "不推销", phrases: [
+        "全程不推销", "没有一直劝你办卡", "不硬推护理套餐", "耳根子清静",
+        "推得很有分寸", "剪完不再兜售项目", "不会绕话让你升单", "该说的说完就干活",
+      ] },
+      { id: "bwash", text: "洗头舒服", phrases: [
+        "洗头很舒服", "按摩得挺到位", "水温调得刚好", "洗头的时候差点睡着",
+        "洗得很仔细，不糊弄", "头皮都给我按松了", "冲得干净不刺眼",
+      ] },
+      { id: "bclean", text: "干净卫生", phrases: [
+        "工具当面消毒", "毛巾是新的", "围布干净", "地上没头发渍",
+        "推子和剪刀都擦过", "店里收拾得清爽", "用的东西放心",
+      ] },
+      { id: "bonTime", text: "预约准时", phrases: [
+        "约的几点就是几点", "到店不用等位", "不让你干坐着", "时间掐得很准",
+        "不会拖着你", "上一单拖了会提前说", "排得明白",
+      ] },
+      { id: "bprice", text: "价格透明", phrases: [
+        "报多少收多少", "没临时加价", "不塞套餐给你", "价格先说清楚",
+        "这个价挺实在", "剪这个手艺值这个钱", "不玩花活",
+      ] },
+      { id: "benv", text: "环境舒服", phrases: [
+        "店里安静不吵", "椅子坐着舒服", "空调温度刚好", "有茶水，能等",
+        "放的音乐不吵", "光线好，剪完看得清", "进去就不想走",
+      ] },
+    ],
+  };
+
   const GROUPS = {
     food: {
       label: "吃得怎么样",
@@ -440,8 +471,38 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
     },
     shop: shop.channel === "waimai" ? SHOP_WAIMAI
         : shop.channel === "service" ? SHOP_SERVICE
+        : shop.channel === "barber" ? SHOP_BARBER
         : SHOP_DINEIN,
   };
+
+  // 理发的第一组：说剪得好不好、听不听需求
+  if (shop.channel === "barber") {
+    GROUPS.food = {
+      label: "剪得怎么样",
+      items: [
+        { id: "bcraft", text: "手艺专业", phrases: [
+          "手艺确实在线", "剪得比我描述的好", "不用反复解释就懂", "下剪很稳",
+          "该收的地方都收了", "细节修得干净", "一看就是老手", "手上功夫看得出来",
+        ] },
+        { id: "bshape", text: "剪完有型", phrases: [
+          "剪完照镜子挺满意", "显脸小", "层次感出来了", "不用打理也有形",
+          "发型立得住", "比照片上还好看", "同事都说精神了", "出门就能见人",
+        ] },
+        { id: "bcolor", text: "染烫到位", phrases: [
+          "染的颜色很正", "不闷不假", "看得出调过色", "烫完不毛躁",
+          "卷度自然", "颜色衬肤色", "没有那种撞头发廊感",
+        ] },
+        { id: "bneed", text: "会听需求", phrases: [
+          "先问我平时怎么打理", "会跟我确认想要的效果", "不自作主张",
+          "我说要短他就真剪短", "会提醒哪种不适合我", "听得懂人话",
+        ] },
+        { id: "btime", text: "不拖时间", phrases: [
+          "按时间收尾", "不拖着你做别的项目", "说多久就多久",
+          "剪完不硬留你", "节奏安排得刚好",
+        ] },
+      ],
+    };
+  }
 
   // 服务业的第一组不是「吃」，换成手艺和效果
   if (shop.channel === "service") {
@@ -497,8 +558,19 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
     "本来只打算问问", "犹豫了挺久才来", "朋友说这家行", "顺手约的一回",
   ];
 
+  const BARBER_OPENERS = [
+    "第一次来这家", "在这剪了两年了", "朋友推荐来的", "路过进来剪的",
+    "预约过来的", "换了家试试", "剪前先聊了半天需求", "同事介绍来的",
+    "看评价找来的", "第二次过来了", "本来只想修一修", "想换个发型就来这家了",
+    "听朋友说这家剪得细", "下班顺路进来的", "冲着评价来的", "约了挺久才约上",
+    "之前那家剪腻了", "想剪短一点就进来了",
+  ];
+
+  const BARBER_PLAIN = ["这一趟", "这次剪下来", "今天过来", "整完", "剪完出来", "坐下来聊完"];
+
   const OPENERS = shop.channel === "waimai" ? WAIMAI_OPENERS
     : shop.channel === "service" ? SERVICE_OPENERS
+    : shop.channel === "barber" ? BARBER_OPENERS
     : DINEIN_OPENERS;
 
   // 正文以「吃」开头时换一套开头，免得「…来吃的，吃着是真香」
@@ -513,6 +585,7 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
 
   const OPENERS_PLAIN = shop.channel === "waimai" ? WAIMAI_PLAIN
     : shop.channel === "service" ? SERVICE_PLAIN
+    : shop.channel === "barber" ? BARBER_PLAIN
     : DINEIN_PLAIN;
 
   const CONNECT = ["，", "，", "，", "，而且", "，另外", "，加上", "，还有",
@@ -524,6 +597,9 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
     : shop.channel === "service"
     ? ["整体体验不错", "没什么可挑的", "比预想的省心", "过程挺舒服",
        "该做的都做到位了", "细节上没糊弄", "全程挺自在"]
+    : shop.channel === "barber"
+    ? ["整体挺满意", "没让我失望", "比之前那家强", "细节上没糊弄",
+       "剪完心情都好了", "该说的都说到位了", "出门回头率还行"]
     : ["吃下来挺舒服", "整体感觉不错", "没什么可挑的", "分量和味道都对得上",
        "这顿吃得挺踏实", "比预期好", "各方面都挺稳", "该有的都有",
        "挑不出什么毛病", "吃完心情挺好"];
@@ -538,6 +614,11 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
        "放心推荐。", "认这家了。", "服务到位，值这个价。", "下个月再来。",
        "会带朋友一起。", "没挑出毛病。", "以后就定这家了。", "比之前去的那家强。",
        "值得专门跑一趟。", "还会再来。"]
+    : shop.channel === "barber"
+    ? ["以后就定这家了。", "已经办卡了。", "会推荐给同事。", "这个价剪成这样，值。",
+       "下次还找他。", "放心推荐。", "认这家了。", "剪完想拍照。", "会带朋友来。",
+       "剪完照镜子挺满意。", "下次还来这家。", "比之前那家靠谱。", "不换人了。",
+       "会一直在这剪。", "朋友问就推这家。"]
     : ["整体挺满意，会再来。", "下次还想来。", "值这个价，推荐试试。",
        "没踩雷，可以放心来。", "吃得挺舒服，会回购。", "总的来说不亏。",
        "会带朋友再来。", "值得专门跑一趟。", "这个价，挺值。", "还想再来吃一次。",
@@ -547,7 +628,11 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
   const picked = new Set();
   const pick = (arr) => arr[(Math.random() * arr.length) | 0];
   const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
-  const MAX_PICK = 3;
+  // 理发店的评价大家愿意多看几行，所以允许多选一个点、字数放宽
+  const LIMITS = shop.channel === "barber"
+    ? { pick: 4, soft: 64, hard: 96 }
+    : { pick: 3, soft: 36, hard: 50 };
+  const MAX_PICK = LIMITS.pick;
 
   /* ---------------- 渲染 chips ---------------- */
   document.getElementById("labelFood").textContent = GROUPS.food.label;
@@ -565,7 +650,7 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
       b.setAttribute("aria-pressed", "false");
       b.addEventListener("click", () => {
         const on = picked.has(item.id);
-        if (!on && picked.size >= MAX_PICK) return toast("三个就够了，多了反倒啰嗦");
+        if (!on && picked.size >= MAX_PICK) return toast(MAX_PICK > 3 ? "四个就够了，再多就像写作文了" : "三个就够了，多了反倒啰嗦");
         if (on) picked.delete(item.id);
         else picked.add(item.id);
         b.setAttribute("aria-pressed", String(!on));
@@ -644,7 +729,7 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
     // 长了就少说一个点，别让客人读一大段
     let list = parts.slice();
     let r = render(list);
-    while (r.t.length > 36 && list.length > 1) {
+    while (r.t.length > LIMITS.soft && list.length > 1) {
       list.pop();
       r = render(list);
     }
@@ -652,11 +737,11 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
 
     // 一句到底时补半句缓和，读起来不那么硬
     const sentences = text.split("。").filter(Boolean).length;
-    if (sentences === 1 && ((chosen.length <= 2 && Math.random() < 0.6) || Math.random() < 0.3)) {
+    if (sentences <= (LIMITS.pick > 3 ? 2 : 1) && ((chosen.length <= 2 && Math.random() < 0.6) || Math.random() < 0.3)) {
       for (let i = 0; i < 3; i++) {
         const bridge = pick(BRIDGES);
         if (!shareWord(bridge, closing) && !text.includes(bridge)) {
-          if ((text + bridge).length + closing.length <= 48) text += bridge + "。";
+          if ((text + bridge).length + closing.length <= LIMITS.hard - 2) text += bridge + "。";
           break;
         }
       }
@@ -665,8 +750,8 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
     // 偶尔用感叹号收尾，别全都一个调子
     text += Math.random() < 0.10 ? closing.replace("。", "！") : closing;
 
-    if (text.length > 50) text = r.op + "，" + r.body + "。" + closing;
-    if (text.length > 50) text = r.body + "。" + closing;
+    if (text.length > LIMITS.hard) text = r.op + "，" + r.body + "。" + closing;
+    if (text.length > LIMITS.hard) text = r.body + "。" + closing;
     const opener = r.op;
 
     recentOpen.push(opener);
@@ -983,6 +1068,8 @@ window.SHOPS = { "shop-4": {"name":"厂花翠翠 · 九宫格老火锅","subtitl
 </script>
 </body>
 </html>
+
+
 
 
 
