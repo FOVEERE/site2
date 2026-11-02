@@ -922,7 +922,8 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
   let jumping = false;
 
   // 外卖和到店的评价入口不一样，别再让人满头找「评价」两个字
-  const HINT_WHERE = shop.channel === "waimai"
+  // 外卖、丽人/服务业的评价都在「订单」里，不在店铺页上
+  const HINT_WHERE = (shop.channel === "waimai" || shop.channel === "barber" || shop.channel === "service")
     ? '打开后点「我的」→「订单」→ <b>待评价</b>'
     : '打开店铺页，点里面的 <b>评价</b>';
 
