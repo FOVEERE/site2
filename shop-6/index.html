@@ -1070,7 +1070,7 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
   }
   // 点评 / 抖音 必须先装 App，不装点了没反应 —— 提前说清楚，别让人以为坏了
   const NEEDAPP = PLATFORMS.some((p) => p.id === "dianping" || p.id === "douyin");
-  if (NEEDAPP && step3Hint) {
+  if (NEEDAPP && step3Hint && !PLATFORMS.some((p) => p.direct)) {
     step3Hint.textContent = "打开后进「评价」，长按输入框粘贴即可 · 点评/抖音需先装 App";
   }
 
@@ -1276,6 +1276,7 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
 </script>
 </body>
 </html>
+
 
 
 
