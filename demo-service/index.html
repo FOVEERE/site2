@@ -187,10 +187,26 @@
     margin-top:12px;background:none;border:0;padding:6px;cursor:pointer;
     font:inherit;font-size:12.5px;color:#9a9184;text-decoration:underline;
   }
+  .jump-tick.warn{background:#ffe7c2;color:#b06a00}
+  .jump-tick.warn svg{display:none}
+  .jump-tick.warn::after{content:"!";font-size:26px;font-weight:800;line-height:1}
+  .jump-manual{margin-top:4px}
+  .jump-manual textarea{
+    width:100%;height:88px;resize:none;border:1.5px solid #ffd27a;border-radius:12px;
+    background:#fffaef;color:#2b2420;font:inherit;font-size:13.5px;line-height:1.6;padding:10px 12px;
+  }
+  #appTip{
+    position:sticky;top:0;z-index:60;margin:0 0 12px;padding:10px 14px;
+    background:#fff3d6;border:1px solid #f3d18b;border-radius:12px;
+    font-size:12.5px;line-height:1.65;color:#6b4a12;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+<div id="appTip" hidden>
+  <b>在微信 / QQ 里打开的</b>：点右上角 ··· → 用浏览器打开，才能跳转到 App
+</div>
   <div class="top">
     <div class="logo">
       <svg viewBox="0 0 24 24"><path d="M5 10.5h14a7 7 0 0 1-14 0Z"/><path d="M8.5 6.6c0-1.2 1.6-1.2 1.6-2.6M13 6.6c0-1.2 1.6-1.2 1.6-2.6"/></svg>
@@ -259,14 +275,20 @@
 
 <div id="toast"></div>
 
+
 <div class="jump-tip" id="jumpTip" aria-hidden="true">
   <div class="jump-card">
-    <div class="jump-tick">
+    <div class="jump-tick" id="jumpTick">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 7"/></svg>
     </div>
-    <p class="jump-t1">草稿已复制</p>
-    <p class="jump-t2">打开后点右下角 <b>评价</b></p>
-    <p class="jump-t3">长按输入框 → 粘贴 → 发布</p>
+    <p class="jump-t1" id="jumpT1">草稿已复制</p>
+    <p class="jump-t2" id="jumpT2">打开后点右下角 <b>评价</b></p>
+    <p class="jump-t3" id="jumpT3">长按输入框 → 粘贴 → 发布</p>
+    <div class="jump-manual" id="jumpManual" hidden>
+      <textarea id="jumpText" readonly></textarea>
+      <p class="jump-t3">上面已全选，长按选「复制」</p>
+      <button class="jump-go" id="jumpCopyAgain" type="button">再复制一次</button>
+    </div>
     <button class="jump-go" id="jumpGo" type="button">立刻打开</button>
     <p class="jump-t4" id="jumpCount">3 秒后自动打开…</p>
     <button class="jump-cancel" id="jumpCancel" type="button">不用了，我自己复制</button>
@@ -788,23 +810,33 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
   });
 
   /* ---------------- 复制 ---------------- */
+  // 老办法：造一个隐藏的输入框选中再 execCommand，比直接选草稿更稳（不会让页面乱滚）
+  function legacyCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:-9999px;opacity:0";
+    document.body.appendChild(ta);
+    let ok = false;
+    try {
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      ok = document.execCommand("copy");
+    } catch (e) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+
   async function copyText(text) {
     if (!text.trim()) return false;
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
         await navigator.clipboard.writeText(text);
         return true;
-      }
-    } catch (e) { /* 落到下面兜底 */ }
-    try {
-      draftEl.focus();
-      draftEl.select();
-      const ok = document.execCommand("copy");
-      window.getSelection().removeAllRanges();
-      return ok;
-    } catch (e) {
-      return false;
+      } catch (e) { /* 落到兜底 */ }
     }
+    return legacyCopy(text);
   }
 
   /* ---------------- 跳转（美团 / 大众点评） ---------------- */
@@ -812,6 +844,12 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
 
   const jumpTip = document.getElementById("jumpTip");
   const jumpCount = document.getElementById("jumpCount");
+  const jumpT1 = document.getElementById("jumpT1");
+  const jumpT2 = document.getElementById("jumpT2");
+  const jumpT3 = document.getElementById("jumpT3");
+  const jumpManual = document.getElementById("jumpManual");
+  const jumpText = document.getElementById("jumpText");
+  const jumpGo = document.getElementById("jumpGo");
   let jumpUrl = "", jumpTimer = null, jumpTick = null;
 
   function hideJump() {
@@ -821,32 +859,60 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
     jumpTip.setAttribute("aria-hidden", "true");
   }
 
-  // 跳转前给 3 秒：告诉他打开后点哪里、怎么粘
-  function showJump(url) {
+  // mode: "" 正常（草稿已复制）｜ "manual" 复制失败，手动长按 ｜ "fail" 没跳过去，复制链接
+  function showJump(url, mode) {
     jumpUrl = url;
-    let n = 3;
-    jumpCount.textContent = n + " 秒后自动打开…";
+    clearTimeout(jumpTimer);
+    clearInterval(jumpTick);
+
+    const fail = mode === "fail";
+    const manual = mode === "manual" || fail;
+
+    const okMode = !fail && !manual;
+    document.getElementById("jumpTick").classList.toggle("warn", !okMode);
+    jumpT1.textContent = fail ? "没自动跳过去" : (manual ? "复制没成功" : "草稿已复制");
+    jumpT2.innerHTML = fail ? "长按上面链接 → 复制 → 粘到浏览器"
+      : (manual ? "长按上面那段字 → 复制" : '打开后点右下角 <b>评价</b>');
+    jumpT3.textContent = fail ? "或者点下面再试一次"
+      : (manual ? "复制好再点下面「立刻打开」" : "长按输入框 → 粘贴 → 发布");
+    jumpGo.textContent = fail ? "再试一次" : "立刻打开";
+
+    jumpManual.hidden = !manual;
+    if (manual) {
+      jumpText.value = fail ? url : draftEl.value;
+      jumpCount.textContent = "";
+    } else {
+      let n = 3;
+      jumpCount.textContent = n + " 秒后自动打开…";
+      jumpTick = setInterval(() => {
+        n -= 1;
+        jumpCount.textContent = n > 0 ? n + " 秒后自动打开…" : "正在打开…";
+      }, 1000);
+      jumpTimer = setTimeout(() => { hideJump(); openUrl(jumpUrl); }, 2600);
+    }
+
     jumpTip.classList.add("on");
     jumpTip.setAttribute("aria-hidden", "false");
-    clearInterval(jumpTick);
-    jumpTick = setInterval(() => {
-      n -= 1;
-      jumpCount.textContent = n > 0 ? n + " 秒后自动打开…" : "正在打开…";
-    }, 1000);
-    clearTimeout(jumpTimer);
-    jumpTimer = setTimeout(() => {
-      hideJump();
-      openUrl(jumpUrl, true);
-    }, 2600);
+
+    if (manual) {
+      // 自动选中，客人直接长按就能复制
+      setTimeout(() => {
+        jumpText.focus();
+        jumpText.select();
+        jumpText.setSelectionRange(0, jumpText.value.length);
+      }, 80);
+    }
   }
 
-  document.getElementById("jumpGo").addEventListener("click", () => {
-    hideJump();
-    openUrl(jumpUrl, true);
-  });
+  jumpGo.addEventListener("click", () => { hideJump(); openUrl(jumpUrl); });
   document.getElementById("jumpCancel").addEventListener("click", hideJump);
+  document.getElementById("jumpCopyAgain").addEventListener("click", async () => {
+    const ok = await copyText(jumpText.value);
+    toast(ok ? "已复制 ✓" : "还是不行，长按框里的字选「复制」");
+    if (ok && jumpText.value === draftEl.value) showJump(jumpUrl);
+  });
 
-  function openUrl(url, viaApp) {
+  function openUrl(url) {
     if (jumping || !url) return;
     jumping = true;
 
@@ -856,17 +922,13 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
 
     location.href = url;
 
-    // 1.2 秒还停在页面上，说明没跳成功 —— 退回到美团店铺页 / 给个提示
+    // 1.6 秒还停在页面上 = 没跳成功（常见于微信内置浏览器），把链接给他复制
     setTimeout(() => {
       document.removeEventListener("visibilitychange", onHide);
       jumping = false;
       if (left) return;
-      if (viaApp && shop.storeUrl && url !== shop.storeUrl) {
-        location.href = shop.storeUrl;
-      } else {
-        toast("没跳过去？在 App 里搜店名也一样");
-      }
-    }, 1200);
+      showJump(url, "fail");
+    }, 1600);
   }
 
   /* ---------------- 平台按钮（美团 / 大众点评 / 抖音团购） ---------------- */
@@ -928,20 +990,21 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
       }, 2400);
       showJump(url);
     } else {
-      // 复制被浏览器挡了：别急着跳走，先让他长按复制，再点一次按钮
-      if (!copyFallback) {
-        copyFallback = true;
-        toast("长按草稿复制，好了再点一下这个按钮");
-        return;
-      }
-      showJump(url);
+      // 复制被浏览器挡了：弹出全选好的草稿，让他长按复制（点按钮也能再试一次）
+      copyFallback = true;
+      showJump(url, "manual");
     }
   }
 
   btnStore.addEventListener("click", () => {
     if (PLACEHOLDER) return toast("还没填店铺链接，见 README 第五节");
-    openUrl(shop.storeUrl, true);
+    openUrl(shop.storeUrl);
   });
+
+  /* ---------------- 在微信/QQ 里打开时给个提示 ---------------- */
+  if (/MicroMessenger|QQ\/[0-9]|Weibo|aweme|AlipayClient/i.test(navigator.userAgent || "")) {
+    document.getElementById("appTip").hidden = false;
+  }
 
   /* ---------------- 可选：用客人的照片生成一张配图 ---------------- */
   const photoFile = document.getElementById("photoFile");
@@ -1068,6 +1131,14 @@ window.SHOPS = { "demo-service": {"name":"示例 · 皮肤管理","subtitle":"�
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
 
