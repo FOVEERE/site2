@@ -1171,22 +1171,22 @@ window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店
 })();
 </script>
 <script>
-(function(){
-  const dot = document.createElement("div");
-  dot.style.cssText = "position:fixed;width:36px;height:36px;margin:-18px 0 0 -18px;border-radius:50%;background:rgba(255,0,0,.75);z-index:99998;pointer-events:none;display:none";
-  document.body.appendChild(dot);
+setTimeout(() => {
   const info = document.createElement("div");
-  info.style.cssText = "position:fixed;left:0;right:0;bottom:0;background:#111;color:#0f0;font:13px monospace;padding:6px;z-index:99999;white-space:pre-wrap";
+  info.style.cssText = "position:fixed;left:0;right:0;bottom:0;background:#111;color:#0f0;font:12px monospace;padding:6px;z-index:99999;white-space:pre-wrap";
+  const rows = [];
+  document.querySelectorAll("#goBtns .btn").forEach((b, i) => {
+    const r = b.getBoundingClientRect();
+    rows.push("btn" + i + " dom=" + Math.round(r.top) + "-" + Math.round(r.bottom) + " cx=" + Math.round(r.left + r.width/2));
+  });
+  document.querySelectorAll(".chip").forEach((c, i) => {
+    if (i > 2) return;
+    const r = c.getBoundingClientRect();
+    rows.push("chip" + i + " dom=" + Math.round(r.top) + "-" + Math.round(r.bottom) + " cx=" + Math.round(r.left + r.width/2));
+  });
+  info.textContent = rows.join("\n");
   document.body.appendChild(info);
-  let log = [];
-  document.addEventListener("click", (e) => {
-    dot.style.display = "block";
-    dot.style.left = e.clientX + "px";
-    dot.style.top = e.clientY + "px";
-    log.push("click " + e.clientX + "," + e.clientY + " -> " + (e.target.className || e.target.tagName));
-    info.textContent = log.slice(-3).join("\n") + "\ndpr=" + window.devicePixelRatio + " vw=" + window.innerWidth;
-  }, true);
-})();
+}, 600);
 </script></body>
 </html>
 
