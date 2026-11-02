@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -100,15 +100,24 @@
 
   const fmt = (n) => (n == null ? "—" : n.toLocaleString("zh-CN"));
 
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
   async function count(key) {
-    try {
-      const r = await fetch(API + encodeURIComponent(NS) + "/" + encodeURIComponent(key), { cache: "no-store" });
-      if (!r.ok) return 0;
-      const j = await r.json();
-      return Number(j.value) || 0;
-    } catch (e) {
-      return null;
+    // 免费计数器有限流：被挡了就等一下重试一次，实在取不到就返回 null（表格显示「—」，不当成 0）
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const r = await fetch(API + encodeURIComponent(NS) + "/" + encodeURIComponent(key), { cache: "no-store" });
+        if (r.ok) {
+          const j = await r.json();
+          return Number(j.value) || 0;
+        }
+        if (r.status === 429 || r.status >= 500) { await sleep(500 * (attempt + 1)); continue; }
+        return null;
+      } catch (e) {
+        await sleep(400 * (attempt + 1));
+      }
     }
+    return null;
   }
 
   async function loadShops() {
@@ -159,9 +168,10 @@
       }
     } else {
       for (const s of shops) {
-        const [view, copy, photo] = await Promise.all([
-          count(s.slug + "-view"), count(s.slug + "-copy"), count(s.slug + "-photo"),
-        ]);
+        // 串行取，一次只打一个请求，避免被限流
+        const view = await count(s.slug + "-view"); await sleep(120);
+        const copy = await count(s.slug + "-copy"); await sleep(120);
+        const photo = await count(s.slug + "-photo"); await sleep(120);
         const prev = snap[s.slug];
         const d = (cur, key) => (prev && Number.isFinite(cur) && Number.isFinite(prev[key]) && cur > prev[key])
           ? "本周 +" + (cur - prev[key]) : "本周 —";
