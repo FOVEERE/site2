@@ -274,7 +274,7 @@
 </div>
 
 <script>
-window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店 · 武陵区滨湖路","channel":"service","storeUrl":"https://www.meituan.com/shop/1565935607.html","dianpingUrl":"https://m.dianping.com/shopshare/lalKsQxrxDEyXDgi?msource=Appshare2021\u0026utm_source=shop_share\u0026shoptype=50\u0026shopcategoryid=157\u0026isoversea=0\u0026shareid=1bE7joaNYi_1793585858701"} };
+window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店 · 武陵区滨湖路","channel":"service","storeUrl":"https://www.meituan.com/shop/1565935607.html","dianpingUrl":"https://m.dianping.com/shopshare/lalKsQxrxDEyXDgi?msource=Appshare2021\u0026utm_source=shop_share\u0026shoptype=50\u0026shopcategoryid=157\u0026isoversea=0\u0026shareid=1bE7joaNYi_1793585858701","douyinUrl":"https://v.douyin.com/5q9hJJQsNmk/"} };
 </script>
 <script>
 (() => {
@@ -790,6 +790,7 @@ window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店
     const list = [];
     if (shop.storeUrl) list.push({ id: "meituan", name: "美团", url: shop.storeUrl });
     if (shop.dianpingUrl) list.push({ id: "dianping", name: "大众点评", url: shop.dianpingUrl });
+    if (shop.douyinUrl) list.push({ id: "douyin", name: "抖音团购", url: shop.douyinUrl });
     return list;
   })();
 
