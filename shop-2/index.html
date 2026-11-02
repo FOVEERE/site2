@@ -1023,6 +1023,8 @@ window.SHOPS = { "shop-2": {"name":"郝大姐 · 铁板烧","subtitle":"乌龙�
   const PLATFORMS = (() => {
     if (Array.isArray(shop.platforms) && shop.platforms.length) return shop.platforms;
     const list = [];
+    // 商家后台领的「官方评价码」解出来的地址：复制完直接落到评价输入框
+    if (shop.reviewUrl) list.push({ id: "meituan", name: "美团评价", url: shop.reviewUrl, direct: true });
     if (shop.storeUrl) list.push({ id: "meituan", name: "美团", url: shop.storeUrl });
     if (shop.dianpingUrl) list.push({ id: "dianping", name: "大众点评", url: shop.dianpingUrl });
     if (shop.douyinUrl) list.push({ id: "douyin", name: "抖音团购", url: shop.douyinUrl });
@@ -1044,7 +1046,7 @@ window.SHOPS = { "shop-2": {"name":"郝大姐 · 铁板烧","subtitle":"乌龙�
     b.type = "button";
     b.className = "btn " + (idx === 0 ? "btn-primary" : "btn-dianping");
     b.dataset.platform = p.id;
-    b.innerHTML = (ICON[p.id] || ICON.meituan) + "复制草稿，打开" + (p.name || "App");
+    b.innerHTML = (ICON[p.id] || ICON.meituan) + (p.direct ? "复制草稿，去写评价" : "复制草稿，打开" + (p.name || "App"));
     b.addEventListener("click", () => goWithDraft(b, p));
     btnHTML.set(b, b.innerHTML);
     goBtns.appendChild(b);
@@ -1054,7 +1056,11 @@ window.SHOPS = { "shop-2": {"name":"郝大姐 · 铁板烧","subtitle":"乌龙�
 
   const step3Title = document.getElementById("step3Title");
   const step3Hint = document.getElementById("step3Hint");
-  if (PLATFORMS.length > 1) {
+  if (PLATFORMS.some((p) => p.direct)) {
+    step3Title.textContent = "去评价页粘贴";
+    btnStore.hidden = true;
+    if (step3Hint) step3Hint.textContent = "复制后会自动跳到评价输入框，长按粘贴就能发";
+  } else if (PLATFORMS.length > 1) {
     step3Title.textContent = "去发布（" + PLATFORMS.map((p) => p.name).join(" / ") + "）";
     btnStore.hidden = true;
   } else if (PLATFORMS.length === 1) {
@@ -1268,6 +1274,8 @@ window.SHOPS = { "shop-2": {"name":"郝大姐 · 铁板烧","subtitle":"乌龙�
 </script>
 </body>
 </html>
+
+
 
 
 
