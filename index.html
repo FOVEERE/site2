@@ -842,6 +842,11 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
   /* ---------------- 跳转（美团 / 大众点评） ---------------- */
   let jumping = false;
 
+  // 外卖和到店的评价入口不一样，别再让人满头找「评价」两个字
+  const HINT_WHERE = shop.channel === "waimai"
+    ? '打开后点「我的」→「订单」→ <b>待评价</b>'
+    : '打开店铺页，点里面的 <b>评价</b>';
+
   const jumpTip = document.getElementById("jumpTip");
   const jumpCount = document.getElementById("jumpCount");
   const jumpT1 = document.getElementById("jumpT1");
@@ -872,7 +877,7 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
     document.getElementById("jumpTick").classList.toggle("warn", !okMode);
     jumpT1.textContent = fail ? "没自动跳过去" : (manual ? "复制没成功" : "草稿已复制");
     jumpT2.innerHTML = fail ? "长按上面链接 → 复制 → 粘到浏览器"
-      : (manual ? "长按上面那段字 → 复制" : '打开后点右下角 <b>评价</b>');
+      : (manual ? "长按上面那段字 → 复制" : HINT_WHERE);
     jumpT3.textContent = fail ? "或者点下面再试一次"
       : (manual ? "复制好再点下面「立刻打开」" : "长按输入框 → 粘贴 → 发布");
     jumpGo.textContent = fail ? "再试一次" : "立刻打开";
@@ -1131,6 +1136,8 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
 </script>
 </body>
 </html>
+
+
 
 
 
