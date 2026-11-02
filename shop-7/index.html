@@ -184,6 +184,7 @@
   }
   .jump-go:active{transform:scale(.985)}
   .jump-t4{margin-top:10px;font-size:12.5px;color:var(--muted)}
+  .jump-name{display:block;width:100%;margin-top:8px;background:none;border:0;color:#6b7280;font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px}
   .jump-cancel{
     margin-top:12px;background:none;border:0;padding:6px;cursor:pointer;
     font:inherit;font-size:12.5px;color:#9a9184;text-decoration:underline;
@@ -291,6 +292,7 @@
       <button class="jump-go" id="jumpCopyAgain" type="button">再复制一次</button>
     </div>
     <button class="jump-go" id="jumpGo" type="button">立刻打开</button>
+    <button class="jump-name" id="jumpName" type="button">复制店名，去 App 里搜</button>
     <p class="jump-t4" id="jumpCount">3 秒后自动打开…</p>
     <button class="jump-cancel" id="jumpCancel" type="button">不用了，我自己复制</button>
   </div>
@@ -933,6 +935,10 @@ window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店
 
   jumpGo.addEventListener("click", () => { hideJump(); openUrl(jumpUrl); });
   document.getElementById("jumpCancel").addEventListener("click", hideJump);
+  document.getElementById("jumpName").addEventListener("click", async () => {
+    const ok = await copyText(shop.name);
+    toast(ok ? "店名已复制，去美团 App 搜一下" : "长按复制：" + shop.name);
+  });
   document.getElementById("jumpCopyAgain").addEventListener("click", async () => {
     const ok = await copyText(jumpText.value);
     toast(ok ? "已复制 ✓" : "还是不行，长按框里的字选「复制」");
@@ -1172,6 +1178,8 @@ window.SHOPS = { "shop-7": {"name":"潮帮男士沙龙","subtitle":"德景园店
 </script>
 </body>
 </html>
+
+
 
 
 
