@@ -92,6 +92,7 @@
     transition:transform .1s ease,box-shadow .2s,background .2s;
   }
   .btn:active{transform:scale(.98)}
+  .btn.is-off{opacity:.45;filter:grayscale(.4)}
   [hidden]{display:none !important}
   .opt{
     font-size:12px;font-weight:600;color:#a99e8e;background:#f1e9dc;
@@ -783,6 +784,16 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
 
     draftEl.value = text;
     updateCounter();
+    syncGoState();
+  }
+
+  // 没选感受时，底下的发布按钮是灰的 —— 避免点了半天没东西可复制
+  function syncGoState() {
+    const empty = !draftEl.value.trim();
+    document.querySelectorAll("#goBtns .btn").forEach((b) => {
+      b.classList.toggle("is-off", empty);
+      b.disabled = empty;
+    });
   }
 
   // 粗查重：两个字的词重叠就算撞了（「口味」「味道」先归成一个字）
@@ -978,6 +989,7 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
     goBtns.appendChild(b);
   });
   btnHTML.set(btnStore, btnStore.innerHTML);
+  syncGoState();
 
   const step3Title = document.getElementById("step3Title");
   const step3Hint = document.getElementById("step3Hint");
@@ -999,6 +1011,7 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
     const url = platform.url;
     if (PLACEHOLDER && platform.id === "meituan") return toast("还没填店铺链接，见 README 第五节");
     if (!url) return toast("还没配置" + (platform.name || "") + "链接");
+    if (!draftEl.value.trim()) { toast("先在上面点一两个感受"); return; }
 
     // 先给个即时反馈，别让人以为点了没反应
     const old = btn.innerHTML;
@@ -1159,6 +1172,8 @@ window.SHOPS = { "shop-6": {"name":"有幸 · 小食院","subtitle":"常德文�
 </script>
 </body>
 </html>
+
+
 
 
 
