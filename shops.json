@@ -4,7 +4,8 @@
                      "subtitle":  "湖南文理学院店 · 外卖",
                      "channel":  "waimai",
                      "storeUrl":  "https://dpurl.cn/PKHGt3tz",
-                     "dianpingUrl":  ""
+                     "dianpingUrl":  "",
+                     "hidden":  true
                  },
     "shop-2":  {
                    "name":  "郝大姐 · 铁板烧",
