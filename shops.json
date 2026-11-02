@@ -1,62 +1,75 @@
-{
-  "shandang": {
-    "name": "膳当家 · 黄焖鸡",
-    "subtitle": "湖南文理学院店 · 外卖",
-    "channel": "waimai",
-    "storeUrl": "https://dpurl.cn/PKHGt3tz",
-    "dianpingUrl": ""
-  },
-  "shop-2": {
-    "name": "郝大姐 · 铁板烧",
-    "subtitle": "乌龙山特色 · 文理学院店",
-    "channel": "dinein",
-    "storeUrl": "http://dpurl.cn/WSKm7Mmz",
-    "dianpingUrl": ""
-  },
-  "shop-3": {
-    "name": "椒椒 · 铜炉火锅鸡",
-    "subtitle": "文理店 · 武陵区长源路",
-    "channel": "dinein",
-    "storeUrl": "http://dpurl.cn/4Bfw8kCz",
-    "dianpingUrl": ""
-  },
-  "shop-4": {
-    "name": "厂花翠翠 · 九宫格老火锅",
-    "subtitle": "常德文理学院店 · 洞庭大道",
-    "channel": "dinein",
-    "storeUrl": "http://dpurl.cn/dFvExhEz",
-    "dianpingUrl": ""
-  },
-  "shop-5": {
-    "name": "舌尖大师 · 文理后街店",
-    "subtitle": "武陵区 · 长源路 110 号",
-    "channel": "dinein",
-    "storeUrl": "http://dpurl.cn/eF9bftXz",
-    "dianpingUrl": ""
-  },
-  "shop-6": {
-    "name": "有幸 · 小食院",
-    "subtitle": "常德文理学院店 · 廖桥横五巷",
-    "channel": "dinein",
-    "storeUrl": "http://dpurl.cn/bm4HVd6z",
-    "dianpingUrl": ""
-  },
-  "shop-7": {
-    "name": "潮帮男士沙龙",
-    "subtitle": "德景园店 · 武陵区滨湖路",
-    "channel": "service",
-    "storeUrl": "https://www.meituan.com/shop/1565935607.html",
-    "dianpingUrl": "https://m.dianping.com/shopshare/lalKsQxrxDEyXDgi?msource=Appshare2021&utm_source=shop_share&shoptype=50&shopcategoryid=157&isoversea=0&shareid=1bE7joaNYi_1793585858701"
-  },
-  "demo-service": {
-    "name": "示例 · 皮肤管理",
-    "subtitle": "服务业模板 · 仅供演示",
-    "channel": "service",
-    "stats": false,
-    "platforms": [
-      { "id": "meituan", "name": "美团", "url": "https://foveere.github.io/site2/" },
-      { "id": "dianping", "name": "大众点评", "url": "https://foveere.github.io/site2/" },
-      { "id": "douyin", "name": "抖音团购", "url": "https://foveere.github.io/site2/" }
-    ]
-  }
+﻿{
+    "shandang":  {
+                     "name":  "膳当家 · 黄焖鸡",
+                     "subtitle":  "湖南文理学院店 · 外卖",
+                     "channel":  "waimai",
+                     "storeUrl":  "https://dpurl.cn/PKHGt3tz",
+                     "dianpingUrl":  ""
+                 },
+    "shop-2":  {
+                   "name":  "郝大姐 · 铁板烧",
+                   "subtitle":  "乌龙山特色 · 文理学院店",
+                   "channel":  "dinein",
+                   "storeUrl":  "http://dpurl.cn/WSKm7Mmz",
+                   "dianpingUrl":  ""
+               },
+    "shop-3":  {
+                   "name":  "椒椒 · 铜炉火锅鸡",
+                   "subtitle":  "文理店 · 武陵区长源路",
+                   "channel":  "dinein",
+                   "storeUrl":  "http://dpurl.cn/4Bfw8kCz",
+                   "dianpingUrl":  ""
+               },
+    "shop-4":  {
+                   "name":  "厂花翠翠 · 九宫格老火锅",
+                   "subtitle":  "常德文理学院店 · 洞庭大道",
+                   "channel":  "dinein",
+                   "storeUrl":  "http://dpurl.cn/dFvExhEz",
+                   "dianpingUrl":  ""
+               },
+    "shop-5":  {
+                   "name":  "舌尖大师 · 文理后街店",
+                   "subtitle":  "武陵区 · 长源路 110 号",
+                   "channel":  "dinein",
+                   "storeUrl":  "http://dpurl.cn/eF9bftXz",
+                   "dianpingUrl":  ""
+               },
+    "shop-6":  {
+                   "name":  "有幸 · 小食院",
+                   "subtitle":  "常德文理学院店 · 廖桥横五巷",
+                   "channel":  "dinein",
+                   "storeUrl":  "http://dpurl.cn/bm4HVd6z",
+                   "dianpingUrl":  ""
+               },
+    "shop-7":  {
+                   "name":  "潮帮男士沙龙",
+                   "subtitle":  "德景园店 · 武陵区滨湖路",
+                   "channel":  "service",
+                   "storeUrl":  "https://www.meituan.com/shop/1565935607.html",
+                   "dianpingUrl":  "https://m.dianping.com/shopshare/lalKsQxrxDEyXDgi?msource=Appshare2021\u0026utm_source=shop_share\u0026shoptype=50\u0026shopcategoryid=157\u0026isoversea=0\u0026shareid=1bE7joaNYi_1793585858701",
+                   "douyinUrl":  "https://v.douyin.com/5q9hJJQsNmk/"
+               },
+    "demo-service":  {
+                         "name":  "示例 · 皮肤管理",
+                         "subtitle":  "服务业模板 · 仅供演示",
+                         "channel":  "service",
+                         "stats":  false,
+                         "platforms":  [
+                                           {
+                                               "id":  "meituan",
+                                               "name":  "美团",
+                                               "url":  "https://foveere.github.io/site2/"
+                                           },
+                                           {
+                                               "id":  "dianping",
+                                               "name":  "大众点评",
+                                               "url":  "https://foveere.github.io/site2/"
+                                           },
+                                           {
+                                               "id":  "douyin",
+                                               "name":  "抖音团购",
+                                               "url":  "https://foveere.github.io/site2/"
+                                           }
+                                       ]
+                     }
 }
