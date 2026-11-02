@@ -93,6 +93,11 @@
   }
   .btn:active{transform:scale(.98)}
   .btn.is-off{opacity:.45;filter:grayscale(.4)}
+  .meta-btns{display:flex;gap:8px}
+  #btnLong{color:#b06a00;background:#fff6e0;border:1px solid #f5dfae}
+  #btnLong.on{background:#ffd166;border-color:#f0b429;color:#5a3d00}
+  .card-wrap img{display:block;width:100%;border-radius:14px;margin:10px 0}
+  .card-no{display:block;margin:2px 0 10px;font-size:12px;color:#8a8378;text-align:center}
   [hidden]{display:none !important}
   .opt{
     font-size:12px;font-weight:600;color:#a99e8e;background:#f1e9dc;
@@ -243,7 +248,10 @@
     </div>
     <div class="draft-meta">
       <b>改完再复制，读起来才像你</b>
-      <button class="btn btn-ghost" id="btnReroll">换一句</button>
+      <div class="meta-btns">
+        <button class="btn btn-ghost" id="btnLong" type="button">发抖音？写长一点</button>
+        <button class="btn btn-ghost" id="btnReroll">换一句</button>
+      </div>
     </div>
   </section>
 
@@ -263,12 +271,12 @@
       <h2>想带一张图？ <span class="opt">可选</span></h2>
     </div>
     <p class="tip">带图的评价更可信。用<b>你自己拍的</b>照片，我们只帮你加上店名和日期。</p>
-    <input type="file" id="photoFile" accept="image/*" hidden>
-    <button class="btn btn-second" id="btnPickPhoto">选一张照片</button>
+    <input type="file" id="photoFile" accept="image/*" multiple hidden>
+    <button class="btn btn-second" id="btnPickPhoto">选照片（最多 3 张）</button>
     <div class="card-wrap" id="cardWrap" hidden>
-      <img id="cardPreview" alt="生成的评价配图">
+      <div id="cardList"></div>
     </div>
-    <p class="hint" id="cardHint" hidden>长按上面这张图 → 存到相册 → 发评价时选它</p>
+    <p class="hint" id="cardHint" hidden>长按每张图 → 存到相册 → 发评价时一起选上</p>
   </section>
 
   <p class="foot" id="footText">你写的每个字，都是下一桌客人的参考</p>
@@ -658,6 +666,26 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
     ? { pick: 4, soft: 64, hard: 96 }
     : { pick: 3, soft: 36, hard: 50 };
   const MAX_PICK = LIMITS.pick;
+  // 发抖音时文字要多，切到长版：允许 4 个点、100 字上下
+  const LIMITS_LONG = { pick: 4, soft: 104, hard: 142 };
+  let longMode = false;
+  const LONG_TAILS = [
+    "细节上做得都比较到位，没什么可挑的。",
+    "价格和体验对得上，不是那种虚的。",
+    "整个过程没有多余的推销，很自在。",
+    "这种踏实做事的地方不多见了，值得专程来一趟。",
+    "身边朋友问起我都会推荐这家。",
+    "下次还会来，也会带朋友一起。",
+    "看得出店里在认真做事，不是敷衍。",
+    "从头到尾都挺顺利，没出什么岔子。",
+    "这个价位能给到这个水平，算厚道。",
+    "该提醒的都提醒了，不用自己操心。",
+    "比起同类的店，我更愿意回头这家。",
+    "味道和体验都在线，挑不出大毛病。",
+    "环境不吵，坐下来能踏实待着。",
+    "流程不拖沓，该快的地方很快。"
+  ];
+  let recentTail = [];
 
   /* ---------------- 渲染 chips ---------------- */
   document.getElementById("labelFood").textContent = GROUPS.food.label;
@@ -711,9 +739,10 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
   function compose() {
     const chosen = allItems.filter((i) => picked.has(i.id));
     if (!chosen.length) return;
+    const L = longMode ? LIMITS_LONG : LIMITS;
 
     // 一段话，最多用 3 个点（选的时候已经限住了）—— 再长就写成清单了
-    const chosen3 = shuffle(chosen).slice(0, MAX_PICK);
+    const chosen3 = shuffle(chosen).slice(0, L.pick);
     // 同一个话题只留一句（「味道好」和「口味地道」是同一个话题）
     const seenTopic = new Set();
     const parts = [];
@@ -754,7 +783,7 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
     // 长了就少说一个点，别让客人读一大段
     let list = parts.slice();
     let r = render(list);
-    while (r.t.length > LIMITS.soft && list.length > 1) {
+    while (r.t.length > L.soft && list.length > 1) {
       list.pop();
       r = render(list);
     }
@@ -762,11 +791,11 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
 
     // 一句到底时补半句缓和，读起来不那么硬
     const sentences = text.split("。").filter(Boolean).length;
-    if (sentences <= (LIMITS.pick > 3 ? 2 : 1) && ((chosen.length <= 2 && Math.random() < 0.6) || Math.random() < 0.3)) {
+    if (sentences <= (L.pick > 3 ? 2 : 1) && ((chosen.length <= 2 && Math.random() < 0.6) || Math.random() < 0.3)) {
       for (let i = 0; i < 3; i++) {
         const bridge = pick(BRIDGES);
         if (!shareWord(bridge, closing) && !text.includes(bridge)) {
-          if ((text + bridge).length + closing.length <= LIMITS.hard - 2) text += bridge + "。";
+          if ((text + bridge).length + closing.length <= L.hard - 2) text += bridge + "。";
           break;
         }
       }
@@ -775,8 +804,20 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
     // 偶尔用感叹号收尾，别全都一个调子
     text += Math.random() < 0.10 ? closing.replace("。", "！") : closing;
 
-    if (text.length > LIMITS.hard) text = r.op + "，" + r.body + "。" + closing;
-    if (text.length > LIMITS.hard) text = r.body + "。" + closing;
+    if (text.length > L.hard) text = r.op + "，" + r.body + "。" + closing;
+    if (text.length > L.hard) text = r.body + "。" + closing;
+    // 抖音版要把话写满：不够 90 字就补一两句真实的尾巴
+    if (longMode) {
+      const tails = shuffle(LONG_TAILS).filter((s) => !recentTail.includes(s));
+      let added = 0;
+      for (const s of tails) {
+        if (text.length >= 100 || added >= 4) break;
+        text += s;
+        recentTail.push(s);
+        added++;
+      }
+      if (recentTail.length > 10) recentTail = recentTail.slice(-10);
+    }
     const opener = r.op;
 
     recentOpen.push(opener);
@@ -814,6 +855,14 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
   }
 
   draftEl.addEventListener("input", updateCounter);
+
+  document.getElementById("btnLong").addEventListener("click", () => {
+    longMode = !longMode;
+    const b = document.getElementById("btnLong");
+    b.classList.toggle("on", longMode);
+    b.textContent = longMode ? "已切到长版（约 100 字）" : "发抖音？写长一点";
+    if (picked.size) compose();
+  });
 
   document.getElementById("btnReroll").addEventListener("click", () => {
     if (!picked.size) return toast("先点一两个感受吧");
@@ -1061,32 +1110,52 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
 
   document.getElementById("btnPickPhoto").addEventListener("click", () => photoFile.click());
 
-  photoFile.addEventListener("change", () => {
-    const f = photoFile.files && photoFile.files[0];
-    if (!f) return;
-
-    const fr = new FileReader();
-    fr.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          cardPreview.src = drawReviewCard(img);
-          cardWrap.hidden = false;
-          cardHint.hidden = false;
-          cardWrap.scrollIntoView({ behavior: "smooth", block: "center" });
-          ping("photo");
-        } catch (e) {
-          toast("这张图处理不了，换一张试试");
-        }
-      };
-      img.onerror = () => toast("这张图读不出来，换一张试试");
-      img.src = fr.result;
-    };
-    fr.readAsDataURL(f);
+  // 最多 3 张：抖音那边要「3 张图才像真到店」
+  photoFile.addEventListener("change", async () => {
+    const files = [...(photoFile.files || [])].slice(0, 3);
+    if (!files.length) return;
+    const list = document.getElementById("cardList");
+    list.innerHTML = "";
+    let n = 0;
+    for (const f of files) {
+      try {
+        const img = await loadImage(f);
+        const url = drawReviewCard(img, files.length > 1 ? n : -1);
+        n++;
+        const el = document.createElement("img");
+        el.src = url;
+        el.alt = "生成的评价配图 " + n;
+        list.appendChild(el);
+        const tag = document.createElement("span");
+        tag.className = "card-no";
+        tag.textContent = files.length > 1 ? "第 " + n + " 张 · 长按保存" : "长按保存";
+        list.appendChild(tag);
+      } catch (e) { /* 单张坏了就跳过 */ }
+    }
+    if (!n) { toast("这些图处理不了，换几张试试"); return; }
+    cardWrap.hidden = false;
+    cardHint.hidden = false;
+    cardWrap.scrollIntoView({ behavior: "smooth", block: "center" });
+    ping("photo");
   });
 
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = fr.result;
+      };
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
+    });
+  }
+
   // 1080×1350：上面是照片，下面是店名、日期和这段草稿
-  function drawReviewCard(photo) {
+  function drawReviewCard(photo, idx) {
+    idx = idx || 0;
     const W = 1080, H = 1350, PH = 1010;
     const cv = document.createElement("canvas");
     cv.width = W;
@@ -1104,6 +1173,21 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
     grad.addColorStop(1, "rgba(12,10,8,.66)");
     g.fillStyle = grad;
     g.fillRect(0, PH - 240, W, 240);
+
+    // 多图时右上角标序号，方便按顺序保存
+    if (idx >= 0) {
+      g.fillStyle = "rgba(0,0,0,.55)";
+      g.beginPath();
+      g.arc(W - 78, 78, 40, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#fff";
+      g.font = "700 26px 'Microsoft YaHei', sans-serif";
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.fillText(String(idx + 1), W - 78, 80);
+      g.textAlign = "left";
+      g.textBaseline = "top";
+    }
 
     g.fillStyle = "#fffaf3";
     g.fillRect(0, PH, W, H - PH);
@@ -1178,6 +1262,18 @@ window.SHOPS = { "shandang": {"name":"膳当家 · 黄焖鸡","subtitle":"湖南
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
